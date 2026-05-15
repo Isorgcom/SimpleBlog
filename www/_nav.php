@@ -20,46 +20,42 @@ $_accent   = get_setting('accent_color', '');
 <?php if ($_nav_text): ?>nav .brand,nav .brand:hover{color:<?= htmlspecialchars($_nav_text,ENT_QUOTES) ?> !important;}<?php endif; ?>
 </style>
 <?php endif; ?>
-<nav<?= $_nu ? ' class="nav-has-user"' : '' ?>>
+<nav>
     <div class="nav-top">
         <a class="brand" href="/">
             <?php if ($_banner): ?>
-                <img src="<?= htmlspecialchars($_banner) ?>" alt="<?= htmlspecialchars($site_name) ?>"
-                     style="max-height:38px;width:auto;display:block">
+                <img src="<?= htmlspecialchars($_banner) ?>" alt="<?= htmlspecialchars($site_name) ?>">
             <?php else: ?>
                 <?= htmlspecialchars($site_name) ?>
             <?php endif; ?>
         </a>
-        <div class="nav-user">
+        <div class="nav-actions">
+            <button class="theme-toggle" type="button" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle theme">
+                <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
             <?php if ($_nu): ?>
-                <span><?= htmlspecialchars($_nu['username']) ?></span>
-                <div class="nav-dropdown-wrap">
-                    <button class="nav-hamburger" onclick="this.nextElementSibling.classList.toggle('open')" title="Menu">&#9776;</button>
-                    <div class="nav-dropdown">
-                        <!-- Page links shown only on mobile (nav-links row hidden) -->
-                        <a href="/" class="nav-mobile-link<?= $_active === 'home' ? ' active' : '' ?>">Home</a>
-                        <a href="/calendar.php" class="nav-mobile-link<?= $_active === 'calendar' ? ' active' : '' ?>">Calendar</a>
-                        <?php if ($_nu && $_nu['role'] === 'admin'): ?>
-                        <a href="/admin_posts.php" class="nav-mobile-link<?= $_active === 'posts' ? ' active' : '' ?>">Posts</a>
-                        <a href="/admin_settings.php" class="nav-mobile-link<?= $_active === 'site-settings' ? ' active' : '' ?>">Site Settings</a>
+                <div class="user-menu" id="userMenu">
+                    <button class="user-menu-btn" type="button" onclick="document.getElementById('userMenu').classList.toggle('open')">
+                        <span class="avatar"><?= htmlspecialchars(strtoupper(substr($_nu['username'], 0, 1))) ?></span>
+                        <span class="username"><?= htmlspecialchars($_nu['username']) ?></span>
+                        <span style="font-size:.7rem;opacity:.6">▾</span>
+                    </button>
+                    <div class="user-menu-panel">
+                        <a href="/"<?= $_active === 'home' ? ' style="color:var(--accent)"' : '' ?>>Home</a>
+                        <?php if ($_nu['role'] === 'admin'): ?>
+                            <a href="/admin_posts.php"<?= $_active === 'posts' ? ' style="color:var(--accent)"' : '' ?>>Posts</a>
+                            <a href="/admin_settings.php"<?= $_active === 'site-settings' ? ' style="color:var(--accent)"' : '' ?>>Site Settings</a>
                         <?php endif; ?>
-                        <div class="nav-mobile-divider"></div>
-                        <a href="/settings.php"<?= $_active === 'settings' ? ' class="active"' : '' ?>>My Settings</a>
-                        <a href="/logout.php" class="nav-dropdown-signout">Sign out</a>
+                        <div class="menu-divider"></div>
+                        <a href="/settings.php"<?= $_active === 'settings' ? ' style="color:var(--accent)"' : '' ?>>My Settings</a>
+                        <a href="/logout.php" class="signout">Sign out</a>
                     </div>
                 </div>
             <?php else: ?>
-                <a href="/login.php" class="btn btn-outline btn-sm">Login</a>
+                <a href="/login.php" class="btn btn-outline btn-sm">Sign in</a>
             <?php endif; ?>
         </div>
-    </div>
-    <div class="nav-links">
-        <a href="/"<?= $_active === 'home' ? ' class="active"' : '' ?>>Home</a>
-        <a href="/calendar.php"<?= $_active === 'calendar' ? ' class="active"' : '' ?>>Calendar</a>
-        <?php if ($_nu && $_nu['role'] === 'admin'): ?>
-            <a href="/admin_posts.php"<?= $_active === 'posts' ? ' class="active"' : '' ?>>Posts</a>
-            <a href="/admin_settings.php"<?= $_active === 'site-settings' ? ' class="active"' : '' ?>>Site Settings</a>
-        <?php endif; ?>
     </div>
 </nav>
 <script src="/nav.js"></script>

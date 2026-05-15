@@ -94,7 +94,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     set_setting('site_url', $site_url);
                 }
                 set_setting('allow_registration', isset($_POST['allow_registration']) ? '1' : '0');
-                set_setting('show_upcoming_events', isset($_POST['show_upcoming_events']) ? '1' : '0');
                 db_log_activity($current['id'], 'updated site settings');
                 $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Settings saved.'];
             }
@@ -341,6 +340,7 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Site Settings &mdash; <?= htmlspecialchars($site_name) ?></title>
     <link rel="stylesheet" href="/style.css">
+    <?php require __DIR__ . '/_head.php'; ?>
     <style>
         .hint { font-size: .78rem; color: #94a3b8; margin-top: .35rem; }
 
@@ -432,7 +432,7 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
 
 <?php $nav_active = 'site-settings'; require __DIR__ . '/_nav.php'; ?>
 
-<div class="dash-wrap">
+<div class="admin-wrap">
 
     <div class="dash-header">
         <h1>Site Settings</h1>
@@ -544,15 +544,6 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
                         Allow new user registration
                     </label>
                     <p class="hint">When unchecked, the Sign Up page returns a 403 and the link is hidden from the login page.</p>
-                </div>
-                <div class="form-group" style="margin-top:.5rem">
-                    <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500">
-                        <input type="checkbox" name="show_upcoming_events" value="1"
-                               <?= get_setting('show_upcoming_events', '1') === '1' ? 'checked' : '' ?>
-                               style="width:16px;height:16px;accent-color:#2563eb">
-                        Show &ldquo;Upcoming Events&rdquo; on the landing page
-                    </label>
-                    <p class="hint">When unchecked, the upcoming-events section is hidden for all visitors.</p>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.25rem">
                     Save

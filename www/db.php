@@ -61,20 +61,6 @@ function db_init(PDO $pdo): void {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
-        CREATE TABLE IF NOT EXISTS events (
-            id          INTEGER PRIMARY KEY AUTOINCREMENT,
-            title       TEXT    NOT NULL,
-            description TEXT,
-            start_date  TEXT    NOT NULL,
-            end_date    TEXT,
-            start_time  TEXT,
-            end_time    TEXT,
-            color       TEXT    NOT NULL DEFAULT '#2563eb',
-            created_by  INTEGER NOT NULL,
-            created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (created_by) REFERENCES users(id)
-        );
-
         CREATE TABLE IF NOT EXISTS comments (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
             type       TEXT    NOT NULL,
@@ -86,21 +72,10 @@ function db_init(PDO $pdo): void {
         );
 
         CREATE INDEX IF NOT EXISTS idx_comments_lookup ON comments(type, content_id);
-
-        CREATE TABLE IF NOT EXISTS event_exceptions (
-            id       INTEGER PRIMARY KEY AUTOINCREMENT,
-            event_id INTEGER NOT NULL,
-            date     TEXT    NOT NULL,
-            UNIQUE(event_id, date),
-            FOREIGN KEY (event_id) REFERENCES events(id)
-        );
     ");
 
     try { $pdo->exec("ALTER TABLE posts ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0"); } catch (Exception $e) {}
     try { $pdo->exec("ALTER TABLE posts ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0"); } catch (Exception $e) {}
-
-    try { $pdo->exec("ALTER TABLE events ADD COLUMN recurrence TEXT NOT NULL DEFAULT 'none'"); } catch (Exception $e) {}
-    try { $pdo->exec("ALTER TABLE events ADD COLUMN recurrence_end TEXT"); } catch (Exception $e) {}
 
     try { $pdo->exec("ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0"); } catch (Exception $e) {}
     try { $pdo->exec("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 1"); } catch (Exception $e) {}
@@ -108,6 +83,18 @@ function db_init(PDO $pdo): void {
     try { $pdo->exec("ALTER TABLE users ADD COLUMN verification_token_expires DATETIME"); } catch (Exception $e) {}
     try { $pdo->exec("ALTER TABLE users ADD COLUMN reset_token TEXT"); } catch (Exception $e) {}
     try { $pdo->exec("ALTER TABLE users ADD COLUMN reset_token_expires DATETIME"); } catch (Exception $e) {}
+
+    try {
+        $marker = $pdo->query("SELECT value FROM site_settings WHERE key='calendar_removed_v1'")->fetchColumn();
+        if ($marker === false) {
+            $pdo->exec("DELETE FROM comments WHERE type='event'");
+            $pdo->exec("DELETE FROM activity_log WHERE action LIKE 'created event:%' OR action LIKE 'edited event id:%' OR action LIKE 'deleted event:%' OR action LIKE 'removed occurrence%'");
+            $pdo->exec("DROP TABLE IF EXISTS event_exceptions");
+            $pdo->exec("DROP TABLE IF EXISTS events");
+            $pdo->exec("DELETE FROM site_settings WHERE key='show_upcoming_events'");
+            $pdo->prepare("INSERT INTO site_settings (key, value) VALUES ('calendar_removed_v1', '1')")->execute();
+        }
+    } catch (Exception $e) {}
 
     $count = $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
     if ((int)$count === 0) {
@@ -118,6 +105,11 @@ function db_init(PDO $pdo): void {
         );
         $stmt->execute(['admin', $hash, 'admin@localhost']);
     }
+}
+
+function reading_time(string $html): int {
+    $words = str_word_count(strip_tags($html));
+    return max(1, (int)round($words / 200));
 }
 
 function get_setting(string $key, string $default = ''): string {

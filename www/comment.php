@@ -26,7 +26,7 @@ if ($action === 'add') {
         header('Location: ' . $redirect);
         exit;
     }
-    $type       = in_array($_POST['type'] ?? '', ['post', 'event']) ? $_POST['type'] : null;
+    $type       = ($_POST['type'] ?? '') === 'post' ? 'post' : null;
     $content_id = (int)($_POST['content_id'] ?? 0);
     $body       = mb_substr(strip_tags(trim($_POST['body'] ?? '')), 0, 2000);
 
