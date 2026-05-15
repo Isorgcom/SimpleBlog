@@ -1,0 +1,59 @@
+# Changelog
+
+All notable changes to SimpleBlog are documented here. Entries are tagged
+with a severity hint when the change is security-relevant.
+
+## [Unreleased] — Security hardening pass
+
+Back-ported from [GameNight](https://github.com/Isorgcom/GameNight)'s
+security review. SimpleBlog shares a common ancestor with GameNight, so
+fixes that map onto features SimpleBlog has are applied here. Items that
+touch GameNight-only endpoints (WhatsApp / SMS / RSVP / walk-in / API)
+are intentionally out of scope.
+
+### Added
+- **Forgot-password flow** — `forgot_password.php` + `reset_password.php`.
+  Tokenized link emailed via the existing `send_email()` helper. Token in
+  POST body, not GET. 1-hour expiry, one-use.
+- **Email verification** — `verify_email.php` + `resend_verification.php`.
+  Required only when SMTP is configured; dev installs without SMTP still
+  work normally.
+- **`rate_limited()` helper** in `auth.php` — wraps the activity-log
+  COUNT-with-time-window pattern so future endpoints can opt in trivially.
+- **`get_site_url()` helper** in `db.php` + a `site_url` admin setting
+  for building absolute URLs in outgoing emails (replaces blind trust in
+  `HTTP_HOST`).
+- **`enforce_password_change()` middleware** — gated at the top of
+  `auth.php` so a forced password change can't be bypassed by visiting a
+  page that doesn't call `require_login()`.
+
+### Changed
+- **`CSP`** — added `form-action 'self'` to limit form submission targets.
+  [medium]
+- **HSTS + Secure cookie flag** — emitted only when the request was
+  served over TLS (detected via `HTTPS` server var or
+  `X-Forwarded-Proto: https`). Keeps dev (HTTP) working. [medium]
+- **Password minimum** — registration form raised from 8 → 12 chars to
+  match the rest of the app. [low]
+- **Seeded admin** — `admin/admin` now ships with `must_change_password=1`
+  and is redirected to `/settings.php?force_change=1` until they change it.
+  [medium]
+- **`json_encode()` in JS contexts** — all 20 sites now pass
+  `JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT` so
+  user-derived strings can't break out of `<script>` blocks or HTML
+  attribute boundaries. [medium]
+- **Banner upload MIME detection** — replaced deprecated
+  `mime_content_type()` with `finfo`. [low]
+- **`docker-compose.yml`** — `mem_limit: 256m`, `read_only: true`,
+  tmpfs at `/tmp`, `/var/run`, `/var/lock`, `/var/log/apache2`. [medium]
+- **`db_log_activity()`** — strips `\x00-\x1F\x7F` to prevent log
+  injection / forgery. [medium]
+
+### Fixed
+- **CSRF empty-token bypass** — `csrf_verify()` now returns false when
+  either the stored session token or the submitted token is empty.
+  Previously `hash_equals('', '')` returned true, letting fresh-session
+  POSTs through. [high]
+- **Rate limiting** — login (10/IP/hr), registration (5/IP/hr),
+  comments (10/IP/5min), forgot-password (3/IP/hr),
+  resend-verification (3/IP/hr). [medium]

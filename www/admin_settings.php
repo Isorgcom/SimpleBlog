@@ -89,6 +89,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 set_setting('site_name', $site_name);
                 if ($timezone !== '') set_setting('timezone', $timezone);
+                $site_url = trim($_POST['site_url'] ?? '');
+                if ($site_url === '' || filter_var($site_url, FILTER_VALIDATE_URL)) {
+                    set_setting('site_url', $site_url);
+                }
                 set_setting('allow_registration', isset($_POST['allow_registration']) ? '1' : '0');
                 set_setting('show_upcoming_events', isset($_POST['show_upcoming_events']) ? '1' : '0');
                 db_log_activity($current['id'], 'updated site settings');
@@ -262,8 +266,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($action === 'banner_upload') {
             if (isset($_FILES['banner']) && $_FILES['banner']['error'] === UPLOAD_ERR_OK) {
-                $tmp  = $_FILES['banner']['tmp_name'];
-                $mime = mime_content_type($tmp);
+                $tmp   = $_FILES['banner']['tmp_name'];
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mime  = $finfo->file($tmp);
                 $allowed_mime = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/gif' => 'gif', 'image/webp' => 'webp'];
                 if (isset($allowed_mime[$mime]) && $_FILES['banner']['size'] <= 2 * 1024 * 1024) {
                     $ext  = $allowed_mime[$mime];
@@ -506,6 +511,14 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
                            value="<?= htmlspecialchars($site_name) ?>"
                            autocomplete="off" required>
                     <p class="hint">Shown in the nav bar, page titles, and footer.</p>
+                </div>
+                <div class="form-group">
+                    <label for="site_url">Site URL</label>
+                    <input type="url" id="site_url" name="site_url"
+                           value="<?= htmlspecialchars(get_setting('site_url', '')) ?>"
+                           placeholder="https://yourdomain.com"
+                           autocomplete="off">
+                    <p class="hint">Full URL of this site. Used in password-reset and verification emails. Leave blank to auto-detect from the request.</p>
                 </div>
                 <div class="form-group">
                     <label for="timezone">Timezone</label>
@@ -784,7 +797,7 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
                                    class="btn-icon" title="Edit">&#9881;</a>
                                 <?php if ((int)$u['id'] !== (int)$current['id']): ?>
                                 <form method="post" action="/admin_settings.php"
-                                      onsubmit="return confirm('Delete ' + <?= json_encode($u['username']) ?> + '?')">
+                                      onsubmit="return confirm('Delete ' + <?= json_encode($u['username'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?> + '?')">
                                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="tab" value="users">

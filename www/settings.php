@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $flash = ['type' => 'error', 'msg' => 'New passwords do not match.'];
             } else {
                 $new_hash = password_hash($new_pw, PASSWORD_BCRYPT);
-                $db->prepare('UPDATE users SET password_hash = ? WHERE id = ?')
+                $db->prepare('UPDATE users SET password_hash = ?, must_change_password = 0 WHERE id = ?')
                    ->execute([$new_hash, $current['id']]);
                 db_log_activity($current['id'], 'changed password');
                 $flash = ['type' => 'success', 'msg' => 'Password updated.'];
@@ -66,6 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: /settings.php');
     exit;
 }
+
+$force_change = !empty($current['must_change_password']);
 
 // Reload fresh user data after possible username change
 $me = $db->prepare('SELECT username, email, role, created_at, last_login FROM users WHERE id = ?');
@@ -98,6 +100,12 @@ $site_name = get_setting('site_name', 'SimpleBlog');
         <h1>Account Settings</h1>
         <p>Update your profile and password.</p>
     </div>
+
+    <?php if ($force_change): ?>
+        <div class="alert alert-error" style="margin-bottom:1.5rem">
+            <strong>Action required:</strong> please set a new password before continuing. You won't be able to access other pages until this is done.
+        </div>
+    <?php endif; ?>
 
     <?php if ($flash['msg']): ?>
         <div class="alert alert-<?= $flash['type'] === 'error' ? 'error' : 'success' ?>" style="margin-bottom:1.5rem">
@@ -133,7 +141,7 @@ $site_name = get_setting('site_name', 'SimpleBlog');
         <!-- Change password -->
         <div class="card" style="max-width:100%">
             <h2>Change Password</h2>
-            <p class="subtitle">Minimum 6 characters.</p>
+            <p class="subtitle">Minimum 12 characters.</p>
             <form method="post" action="/settings.php">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
                 <input type="hidden" name="action" value="update_password">

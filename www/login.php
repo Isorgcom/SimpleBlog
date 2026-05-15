@@ -13,6 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     session_start_safe();
     if (!csrf_verify()) {
         $error = 'Invalid request. Please try again.';
+    } elseif (rate_limited('login_failed', 10, '1 hour')) {
+        $error = 'Too many sign-in attempts. Please try again later.';
     } else {
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
@@ -20,7 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($username === '' || $password === '') {
             $error = 'Username and password are required.';
         } elseif (!attempt_login($username, $password)) {
-            $error = 'Invalid username or password.';
+            db_log_activity(0, 'login_failed:' . strtolower($username));
+            if (($GLOBALS['_login_failure_reason'] ?? '') === 'unverified') {
+                $error = 'Please verify your email address before signing in.';
+                $error_show_resend = true;
+            } else {
+                $error = 'Invalid username or password.';
+            }
         } else {
             header('Location: /');
             exit;
@@ -52,8 +60,16 @@ $site_name = get_setting('site_name', 'SimpleBlog');
         <h2>Sign In</h2>
         <p class="subtitle">Enter your credentials to access the dashboard.</p>
 
+        <?php if (($_GET['registered'] ?? '') === 'pending'): ?>
+            <div class="alert alert-success">Account created! Check your email for a verification link before signing in.</div>
+        <?php endif; ?>
         <?php if ($error): ?>
-            <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
+            <div class="alert alert-error">
+                <?= htmlspecialchars($error) ?>
+                <?php if (!empty($error_show_resend)): ?>
+                    <br><a href="/resend_verification.php">Resend verification email</a>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
 
         <form method="post" action="/login.php" novalidate>
@@ -77,8 +93,12 @@ $site_name = get_setting('site_name', 'SimpleBlog');
             </button>
         </form>
 
+        <p style="text-align:center;margin-top:1rem;font-size:.875rem;color:#64748b">
+            <a href="/forgot_password.php">Forgot password?</a>
+        </p>
+
         <?php if (get_setting('allow_registration', '1') === '1'): ?>
-        <p style="text-align:center;margin-top:1.25rem;font-size:.875rem;color:#64748b">
+        <p style="text-align:center;margin-top:.5rem;font-size:.875rem;color:#64748b">
             Don't have an account? <a href="/register.php">Sign up</a>
         </p>
         <?php endif; ?>

@@ -22,6 +22,10 @@ $db     = get_db();
 $action = $_POST['action'] ?? '';
 
 if ($action === 'add') {
+    if (rate_limited('comment_add', 10, '5 minutes')) {
+        header('Location: ' . $redirect);
+        exit;
+    }
     $type       = in_array($_POST['type'] ?? '', ['post', 'event']) ? $_POST['type'] : null;
     $content_id = (int)($_POST['content_id'] ?? 0);
     $body       = mb_substr(strip_tags(trim($_POST['body'] ?? '')), 0, 2000);
@@ -29,7 +33,7 @@ if ($action === 'add') {
     if ($type && $content_id > 0 && $body !== '') {
         $db->prepare('INSERT INTO comments (type, content_id, user_id, body) VALUES (?, ?, ?, ?)')
            ->execute([$type, $content_id, $user['id'], $body]);
-        db_log_activity($user['id'], "commented on $type id $content_id");
+        db_log_activity($user['id'], "comment_add on $type id $content_id");
     }
 } elseif ($action === 'edit') {
     $comment_id = (int)($_POST['comment_id'] ?? 0);

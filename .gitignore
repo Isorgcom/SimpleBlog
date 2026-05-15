@@ -10,6 +10,9 @@ db/
 # Stale local backups
 www/_backups/
 
+# Local dev compose
+docker-compose.dev.yml
+
 # Uploaded media (keep the directory + .htaccess via !rules below)
 www/uploads/*
 !www/uploads/.htaccess

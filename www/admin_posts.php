@@ -455,7 +455,7 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
 
 <script src="/vendor/jodit/jodit.min.js"></script>
 <script>
-const csrfToken = <?= json_encode($token) ?>;
+const csrfToken = <?= json_encode($token, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
 // ── Jodit setup ───────────────────────────────────────────────────────────────
 const editor = Jodit.make('#jodit-editor', {
@@ -543,7 +543,7 @@ function openModal(id, title, date, content, pinned) {
     document.getElementById('pinRow').style.display    = editing ? '' : 'none';
     document.getElementById('f_pinned').checked        = !!pinned;
 
-    const serverNow = <?= json_encode($now_local) ?>;
+    const serverNow = <?= json_encode($now_local, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     const ts    = date || serverNow;
     const parts = ts.split(' ');
     document.getElementById('f_date').value = parts[0] ?? '';
@@ -635,9 +635,9 @@ function bulkDelete() {
 <?php if ($edit_post): ?>
 openModal(
     <?= (int)$edit_post['id'] ?>,
-    <?= json_encode($edit_post['title']) ?>,
-    <?= json_encode((new DateTime($edit_post['created_at'], new DateTimeZone('UTC')))->setTimezone(new DateTimeZone(get_setting('timezone', 'UTC')))->format('Y-m-d H:i:s')) ?>,
-    <?= json_encode($edit_post['content']) ?>,
+    <?= json_encode($edit_post['title'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
+    <?= json_encode((new DateTime($edit_post['created_at'], new DateTimeZone('UTC')))->setTimezone(new DateTimeZone(get_setting('timezone', 'UTC')))->format('Y-m-d H:i:s'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
+    <?= json_encode($edit_post['content'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
     <?= (int)$edit_post['pinned'] ?>
 );
 <?php endif; ?>

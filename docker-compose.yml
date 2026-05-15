@@ -9,6 +9,14 @@ services:
       - ./www:/var/www/html
       - ./db:/var/db
       - ./config:/var/config:ro
+    mem_limit: 256m
+    memswap_limit: 256m
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run
+      - /var/lock
+      - /var/log/apache2
     networks:
       - default
       - npm_default

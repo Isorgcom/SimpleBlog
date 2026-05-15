@@ -232,7 +232,7 @@ $site_name = get_setting('site_name', 'SimpleBlog');
             Permanently delete this account and all associated activity logs. This cannot be undone.
         </p>
         <form method="post" action="/user_edit.php?id=<?= $id ?>"
-              onsubmit="return confirm('Permanently delete ' + <?= json_encode($target['username']) ?> + '? This cannot be undone.')">
+              onsubmit="return confirm('Permanently delete ' + <?= json_encode($target['username'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?> + '? This cannot be undone.')">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
             <input type="hidden" name="action" value="delete">
             <button type="submit" class="btn" style="background:#dc2626;color:#fff">

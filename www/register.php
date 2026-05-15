@@ -41,7 +41,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     session_start_safe();
     if (!csrf_verify()) {
         $error = 'Invalid request. Please try again.';
+    } elseif (rate_limited('register_attempt', 5, '1 hour')) {
+        $error = 'Too many registration attempts. Please try again later.';
     } else {
+        db_log_activity(0, 'register_attempt');
         $username  = trim($_POST['username'] ?? '');
         $email     = trim($_POST['email'] ?? '');
         $password  = $_POST['password'] ?? '';
@@ -52,7 +55,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = register_user($username, $email, $password) ?? '';
             if ($error === '') {
-                header('Location: /');
+                if (!empty($_SESSION['user_id'])) {
+                    header('Location: /');
+                } else {
+                    header('Location: /login.php?registered=pending');
+                }
                 exit;
             }
         }
@@ -109,14 +116,14 @@ $site_name = get_setting('site_name', 'SimpleBlog');
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password"
-                       autocomplete="new-password" required minlength="8">
-                <p class="hint">At least 8 characters.</p>
+                       autocomplete="new-password" required minlength="12">
+                <p class="hint">At least 12 characters.</p>
             </div>
 
             <div class="form-group">
                 <label for="password2">Confirm Password</label>
                 <input type="password" id="password2" name="password2"
-                       autocomplete="new-password" required minlength="8">
+                       autocomplete="new-password" required minlength="12">
             </div>
 
             <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem">

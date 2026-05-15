@@ -96,20 +96,25 @@ function db_init(PDO $pdo): void {
         );
     ");
 
-    // Add pinned column to posts if it doesn't exist yet (safe on existing DBs)
     try { $pdo->exec("ALTER TABLE posts ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0"); } catch (Exception $e) {}
     try { $pdo->exec("ALTER TABLE posts ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0"); } catch (Exception $e) {}
 
-    // Add recurrence columns if they don't exist yet (safe on existing DBs)
     try { $pdo->exec("ALTER TABLE events ADD COLUMN recurrence TEXT NOT NULL DEFAULT 'none'"); } catch (Exception $e) {}
     try { $pdo->exec("ALTER TABLE events ADD COLUMN recurrence_end TEXT"); } catch (Exception $e) {}
 
-    // Seed a default admin if no users exist
+    try { $pdo->exec("ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 1"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE users ADD COLUMN verification_token TEXT"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE users ADD COLUMN verification_token_expires DATETIME"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE users ADD COLUMN reset_token TEXT"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE users ADD COLUMN reset_token_expires DATETIME"); } catch (Exception $e) {}
+
     $count = $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
     if ((int)$count === 0) {
         $hash = password_hash('admin', PASSWORD_BCRYPT);
         $stmt = $pdo->prepare(
-            "INSERT INTO users (username, password_hash, email, role) VALUES (?, ?, ?, 'admin')"
+            "INSERT INTO users (username, password_hash, email, role, must_change_password, email_verified)
+             VALUES (?, ?, ?, 'admin', 1, 1)"
         );
         $stmt->execute(['admin', $hash, 'admin@localhost']);
     }
@@ -130,6 +135,16 @@ function set_setting(string $key, string $value): void {
     get_db()->prepare('INSERT INTO site_settings (key, value) VALUES (?, ?)
         ON CONFLICT(key) DO UPDATE SET value = excluded.value')
         ->execute([$key, $value]);
+}
+
+function get_site_url(): string {
+    $url = get_setting('site_url', '');
+    if ($url !== '') return rtrim($url, '/');
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+              || (strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+              ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    return $scheme . '://' . $host;
 }
 
 function get_client_ip(): string {
@@ -262,6 +277,7 @@ function sanitize_html(string $html): string {
 }
 
 function db_log_activity(int $user_id, string $action): void {
+    $action = preg_replace('/[\x00-\x1F\x7F]/', '', $action);
     $stmt = get_db()->prepare(
         'INSERT INTO activity_log (user_id, action, ip) VALUES (?, ?, ?)'
     );

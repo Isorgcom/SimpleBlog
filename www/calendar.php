@@ -613,7 +613,7 @@ $token = ($isAdmin || $current) ? csrf_token() : '';
                 <?php foreach ($dayEvents as $ev): ?>
                     <div class="cal-event"
                          style="background:<?= htmlspecialchars($ev['color']) ?>"
-                         onclick="viewEvent(<?= htmlspecialchars(json_encode($ev)) ?>)"
+                         onclick="viewEvent(<?= htmlspecialchars(json_encode($ev, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)) ?>)"
                          title="<?= htmlspecialchars($ev['title']) ?>">
                         <span class="ev-label">
                             <?php if ($ev['start_time'] && $ev['start_date'] === $dateStr): ?>
@@ -623,7 +623,7 @@ $token = ($isAdmin || $current) ? csrf_token() : '';
                         </span>
                         <?php if ($isAdmin): ?>
                         <button class="ev-edit-btn" title="Edit event"
-                                onclick="event.stopPropagation();openEditModal(<?= htmlspecialchars(json_encode($ev)) ?>)">&#9998;</button>
+                                onclick="event.stopPropagation();openEditModal(<?= htmlspecialchars(json_encode($ev, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)) ?>)">&#9998;</button>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
@@ -679,13 +679,13 @@ $token = ($isAdmin || $current) ? csrf_token() : '';
                 <div class="week-allday-chip"
                      style="background:<?= htmlspecialchars($ev['color']) ?>"
                      title="<?= htmlspecialchars($ev['title']) ?>"
-                     onclick="viewEvent(<?= htmlspecialchars(json_encode($ev)) ?>)">
+                     onclick="viewEvent(<?= htmlspecialchars(json_encode($ev, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)) ?>)">
                     <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">
                         <?= htmlspecialchars($ev['title']) ?>
                     </span>
                     <?php if ($isAdmin): ?>
                     <button class="ev-edit-btn" title="Edit event"
-                            onclick="event.stopPropagation();openEditModal(<?= htmlspecialchars(json_encode($ev)) ?>)">&#9998;</button>
+                            onclick="event.stopPropagation();openEditModal(<?= htmlspecialchars(json_encode($ev, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT)) ?>)">&#9998;</button>
                     <?php endif; ?>
                 </div>
                 <?php endforeach; ?>
@@ -874,7 +874,7 @@ $token = ($isAdmin || $current) ? csrf_token() : '';
 
 <script>
 let currentEvent = null;
-const eventComments = <?= json_encode($ev_comments) ?>;
+const eventComments = <?= json_encode($ev_comments, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 const IS_ADMIN = <?= $isAdmin ? 'true' : 'false' ?>;
 
 // ── View modal ────────────────────────────────────────────────────────────────
@@ -915,8 +915,8 @@ function viewEvent(ev) {
     const list     = document.getElementById('vCommentsList');
     heading.textContent = comments.length + (comments.length === 1 ? ' Comment' : ' Comments');
     const calRedir  = '/calendar.php?m=<?= htmlspecialchars($monthParam) ?>';
-    const calCsrf   = <?= json_encode($token) ?>;
-    const currentId = <?= json_encode((int)($current['id'] ?? 0)) ?>;
+    const calCsrf   = <?= json_encode($token, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    const currentId = <?= json_encode((int)($current['id'] ?? 0), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
     // Reset bulk-select state
     <?php if ($isAdmin): ?>
@@ -983,7 +983,7 @@ function editCalComment(id, btn, origBody) {
     form.action = '/comment.php';
     form.style.cssText = 'margin:0';
     const calRedir = '/calendar.php?m=<?= htmlspecialchars($monthParam) ?>';
-    const calCsrf  = <?= json_encode($token) ?>;
+    const calCsrf  = <?= json_encode($token, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     form.innerHTML = `
         <input type="hidden" name="csrf_token" value="${calCsrf}">
         <input type="hidden" name="action" value="edit">
@@ -1107,12 +1107,12 @@ function fmt12(t) {
 // ── Auto-open event from landing page link ────────────────────────────────────
 <?php if ($autoOpenEvent): ?>
 document.addEventListener('DOMContentLoaded', () =>
-    viewEvent(<?= json_encode($autoOpenEvent) ?>));
+    viewEvent(<?= json_encode($autoOpenEvent, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>));
 <?php endif; ?>
 
 // ── Week view rendering ───────────────────────────────────────────────────────
 <?php if ($viewMode === 'week'): ?>
-const WK_BY_DATE  = <?= json_encode($wkByDate) ?>;
+const WK_BY_DATE  = <?= json_encode($wkByDate, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 const WK_TODAY    = '<?= $today->format('Y-m-d') ?>';
 const WK_START    = '<?= $wkStartStr ?>';
 const WK_END      = '<?= $wkEndStr ?>';

@@ -716,11 +716,11 @@ $tlMonths = $tlStmt->fetchAll();
     if (!sentinel) return;
 
     const CHUNK      = <?= (int)$chunk ?>;
-    const MONTH_PARAM = <?= json_encode($monthFilter ? '&month=' . $monthFilter : '') ?>;
+    const MONTH_PARAM = <?= json_encode($monthFilter ? '&month=' . $monthFilter : '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     let offset      = <?= count($posts) ?>;
-    let hasMore     = <?= json_encode($total > count($posts)) ?>;
+    let hasMore     = <?= json_encode($total > count($posts), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     let busy        = false;
-    let lastMonth   = <?= json_encode($tlPrevMonth ?? '') ?>;
+    let lastMonth   = <?= json_encode($tlPrevMonth ?? '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
     if (!hasMore) { sentinel.remove(); return; }
 
@@ -779,7 +779,7 @@ $tlMonths = $tlStmt->fetchAll();
 
 <?php if ($user): ?>
 <script>
-const _csrf = <?= json_encode($csrf) ?>;
+const _csrf = <?= json_encode($csrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
 function toggleComments(postId) {
     const body = document.getElementById('cmts-body-' + postId);

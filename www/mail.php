@@ -25,6 +25,14 @@ function smtp_from_config(): bool {
 }
 
 /**
+ * True if SMTP is configured via either config.php OR site settings.
+ */
+function smtp_configured(): bool {
+    if (smtp_from_config()) return true;
+    return get_setting('smtp_host', '') !== '' && get_setting('smtp_from', '') !== '';
+}
+
+/**
  * Send an email. Returns null on success, error string on failure.
  */
 function send_email(string $toAddress, string $toName, string $subject, string $htmlBody): ?string {
