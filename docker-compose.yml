@@ -1,0 +1,18 @@
+services:
+  simpleblog:
+    build: .
+    container_name: simpleblog
+    restart: unless-stopped
+    expose:
+      - "80"
+    volumes:
+      - ./www:/var/www/html
+      - ./db:/var/db
+      - ./config:/var/config:ro
+    networks:
+      - default
+      - npm_default
+
+networks:
+  npm_default:
+    external: true

@@ -1,0 +1,15 @@
+# Credentials — never commit the real config
+config/config.php
+
+# SQLite database
+db/
+
+# Local Claude Code settings (may contain LAN IPs / host paths)
+.claude/
+
+# Stale local backups
+www/_backups/
+
+# Uploaded media (keep the directory + .htaccess via !rules below)
+www/uploads/*
+!www/uploads/.htaccess

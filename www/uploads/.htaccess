@@ -1,0 +1,8 @@
+# Serve images; block execution of any script files
+Options -Indexes -ExecCGI
+RemoveHandler .php .php3 .php4 .php5 .phtml .shtml .pl .py .cgi
+RemoveType .php .php3 .php4 .php5 .phtml .shtml
+
+<FilesMatch "\.php\d?$">
+    Require all denied
+</FilesMatch>

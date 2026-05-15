@@ -1,0 +1,15 @@
+# Disable directory listing
+Options -Indexes
+
+# Hide PHP errors from the browser
+php_flag display_errors Off
+
+# Block direct web access to internal/partial PHP files
+<FilesMatch "^(auth|db|_nav|config|mail)\.php$">
+    Require all denied
+</FilesMatch>
+
+# Block any file named config.php anywhere in the webroot (defense-in-depth)
+<Files "config.php">
+    Require all denied
+</Files>
