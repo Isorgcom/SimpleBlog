@@ -83,7 +83,7 @@ $tlMonths = $tlStmt->fetchAll();
             $comments = $post_comments[$post['id']] ?? [];
             $rt = reading_time($post['content']);
         ?>
-        <article class="post-article" id="post-<?= (int)$post['id'] ?>">
+        <article class="post-article<?= $post['pinned'] ? ' is-featured' : '' ?>" id="post-<?= (int)$post['id'] ?>">
             <div class="post-meta">
                 <?php if ($post['pinned']): ?><span class="pin-chip">📌 Pinned</span><?php endif; ?>
                 <span><?= htmlspecialchars($dt->format('F j, Y')) ?></span>
@@ -172,7 +172,6 @@ $tlMonths = $tlStmt->fetchAll();
                 </div>
             </div>
         </article>
-        <?php if ($idx < $lastIdx): ?><div class="post-divider"></div><?php endif; ?>
         <?php endforeach; ?>
         </div>
 

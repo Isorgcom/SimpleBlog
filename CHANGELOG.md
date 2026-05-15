@@ -3,6 +3,33 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.2.1] — 2026-05-15 — Desktop framework polish
+
+Iteration on v0.2.0 after the editorial-reader layout felt too austere
+on wide screens. Inspired by Auth0 Blog, Tom Preston-Werner's site, and
+Lattice — all from the [Jekyll showcase](https://jekyllrb.com/showcase/).
+
+### Changed
+- **Wider main wrapper** on desktop (1080px) while keeping the reading
+  column (`.post-body`) capped at 68ch for comfortable reading.
+- **Posts render as soft cards** — light surface bg, border, generous
+  padding, subtle hover lift. Replaces the flat-with-dividers look that
+  read as a thin column on big monitors.
+- **Featured/pinned posts** get an accent left-rule + slightly larger
+  title (`.is-featured` modifier).
+- **Horizontal nav links** restored in the desktop nav (Home, Posts,
+  Settings for admins). Hidden below 720px where the user dropdown
+  handles it.
+- **Mobile spacing** tightened — cards now have 1.5rem padding on
+  phones, list gap reduced.
+
+### Notes
+- Theme tokens, dark mode, fonts, footer archive, auth/admin pages:
+  all unchanged.
+- The `.is-featured` modifier is set automatically for pinned posts;
+  unpinned posts can still be visually highlighted later (e.g., "newest"
+  treatment) by adding the same class.
+
 ## [0.2.0] — 2026-05-15 — Editorial reader redesign + calendar removal
 
 ### Removed

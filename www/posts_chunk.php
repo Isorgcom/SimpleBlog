@@ -55,8 +55,7 @@ foreach ($posts as $idx => $post):
     $redir = '/' . ($monthFilter ? '?month=' . urlencode($monthFilter) : '') . '#post-' . (int)$post['id'];
     $rt = reading_time($post['content']);
 ?>
-<div class="post-divider"></div>
-<article class="post-article" id="post-<?= (int)$post['id'] ?>">
+<article class="post-article<?= $post['pinned'] ? ' is-featured' : '' ?>" id="post-<?= (int)$post['id'] ?>">
     <div class="post-meta">
         <?php if ($post['pinned']): ?><span class="pin-chip">📌 Pinned</span><?php endif; ?>
         <span><?= htmlspecialchars($dt->format('F j, Y')) ?></span>
