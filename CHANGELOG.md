@@ -3,7 +3,12 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
-## [Unreleased] — Security hardening pass
+## [0.1.0] — 2026-05-15 — Initial release + security hardening pass
+
+First tagged release. Exposes `APP_VERSION` via `www/version.php`, shown in
+the footer of every page and on the admin dashboard.
+
+### Security hardening pass
 
 Back-ported from [GameNight](https://github.com/Isorgcom/GameNight)'s
 security review. SimpleBlog shares a common ancestor with GameNight, so
