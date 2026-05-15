@@ -201,6 +201,7 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Posts &mdash; <?= htmlspecialchars($site_name) ?></title>
     <link rel="stylesheet" href="/style.css">
+    <?php require __DIR__ . '/_head.php'; ?>
     <link href="/vendor/jodit/jodit.min.css" rel="stylesheet">
     <style>
         .hint { font-size: .78rem; color: #94a3b8; margin-top: .35rem; }
@@ -293,7 +294,7 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
 
 <?php $nav_active = 'posts'; require __DIR__ . '/_nav.php'; ?>
 
-<div class="dash-wrap">
+<div class="admin-wrap">
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:1rem">
         <h1 style="font-size:1.5rem">Manage Posts</h1>

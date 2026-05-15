@@ -54,43 +54,40 @@ $site_name = get_setting('site_name', 'SimpleBlog');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password &mdash; <?= htmlspecialchars($site_name) ?></title>
+    <title>Reset password &mdash; <?= htmlspecialchars($site_name) ?></title>
     <link rel="stylesheet" href="/style.css">
+    <?php require __DIR__ . '/_head.php'; ?>
 </head>
 <body>
-<nav><div class="nav-top"><a class="brand" href="/"><?= htmlspecialchars($site_name) ?></a></div></nav>
-<div class="card-wrap">
-    <div class="card">
-        <h2>Reset Password</h2>
+<?php require __DIR__ . '/_nav.php'; ?>
+<main class="center-wrap">
+    <div class="form-card">
+        <h1>Reset password</h1>
         <?php if ($done): ?>
             <div class="alert alert-success">Your password has been reset. You can now sign in with your new password.</div>
-            <p style="text-align:center;margin-top:1rem"><a href="/login.php" class="btn btn-primary">Sign In</a></p>
+            <p style="text-align:center;margin-top:1rem"><a href="/login.php" class="btn btn-primary">Sign in</a></p>
         <?php elseif (!$user): ?>
             <div class="alert alert-error">This reset link is invalid or has expired. Please request a new one.</div>
             <p style="text-align:center;margin-top:1rem"><a href="/forgot_password.php">Request a new link</a></p>
         <?php else: ?>
             <p class="subtitle">Choose a new password for <strong><?= htmlspecialchars($user['username']) ?></strong>.</p>
-            <?php if ($error): ?>
-                <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
-            <?php endif; ?>
+            <?php if ($error): ?><div class="alert alert-error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
             <form method="post" action="/reset_password.php" novalidate>
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
                 <input type="hidden" name="reset_token" value="<?= htmlspecialchars($token_raw) ?>">
                 <div class="form-group">
-                    <label for="new_password">New Password</label>
-                    <input type="password" id="new_password" name="new_password"
-                           autocomplete="new-password" required minlength="12">
+                    <label for="new_password">New password</label>
+                    <input type="password" id="new_password" name="new_password" autocomplete="new-password" required minlength="12">
                     <p class="hint">At least 12 characters.</p>
                 </div>
                 <div class="form-group">
-                    <label for="confirm_password">Confirm Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password"
-                           autocomplete="new-password" required minlength="12">
+                    <label for="confirm_password">Confirm password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" required minlength="12">
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem">Reset Password</button>
+                <button type="submit" class="btn btn-primary btn-block btn-lg">Reset password</button>
             </form>
         <?php endif; ?>
     </div>
-</div>
+</main>
 </body>
 </html>

@@ -48,38 +48,36 @@ $site_name = get_setting('site_name', 'SimpleBlog');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password &mdash; <?= htmlspecialchars($site_name) ?></title>
+    <title>Forgot password &mdash; <?= htmlspecialchars($site_name) ?></title>
     <link rel="stylesheet" href="/style.css">
+    <?php require __DIR__ . '/_head.php'; ?>
 </head>
 <body>
-<nav><div class="nav-top"><a class="brand" href="/"><?= htmlspecialchars($site_name) ?></a></div></nav>
-<div class="card-wrap">
-    <div class="card">
-        <h2>Forgot Password</h2>
+<?php require __DIR__ . '/_nav.php'; ?>
+<main class="center-wrap">
+    <div class="form-card">
+        <h1>Forgot password</h1>
         <?php if ($sent): ?>
             <div class="alert alert-success">
-                If an account exists for that email address, a password reset link has been sent.
-                Check your inbox (and spam folder).
+                If an account exists for that email, a password reset link has been sent. Check your inbox (and spam folder).
             </div>
-            <p style="text-align:center;margin-top:1rem"><a href="/login.php">Back to Sign In</a></p>
+            <p style="text-align:center;margin-top:1rem"><a href="/login.php">Back to sign in</a></p>
         <?php else: ?>
             <p class="subtitle">Enter your email address and we'll send you a link to reset your password.</p>
-            <?php if ($error): ?>
-                <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
-            <?php endif; ?>
+            <?php if ($error): ?><div class="alert alert-error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
             <form method="post" action="/forgot_password.php" novalidate>
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" autocomplete="email" autofocus required>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem">Send Reset Link</button>
+                <button type="submit" class="btn btn-primary btn-block btn-lg">Send reset link</button>
             </form>
-            <p style="text-align:center;margin-top:1rem;font-size:.875rem;color:#64748b">
-                <a href="/login.php">Back to Sign In</a>
+            <p style="text-align:center;margin-top:1.25rem;font-size:.88rem;color:var(--text-muted)">
+                <a href="/login.php">Back to sign in</a>
             </p>
         <?php endif; ?>
     </div>
-</div>
+</main>
 </body>
 </html>

@@ -41,35 +41,34 @@ $site_name = get_setting('site_name', 'SimpleBlog');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email &mdash; <?= htmlspecialchars($site_name) ?></title>
+    <title>Verify email &mdash; <?= htmlspecialchars($site_name) ?></title>
     <link rel="stylesheet" href="/style.css">
+    <?php require __DIR__ . '/_head.php'; ?>
 </head>
 <body>
-<nav><div class="nav-top"><a class="brand" href="/"><?= htmlspecialchars($site_name) ?></a></div></nav>
-<div class="card-wrap">
-    <div class="card">
-        <h2>Verify Email</h2>
+<?php require __DIR__ . '/_nav.php'; ?>
+<main class="center-wrap">
+    <div class="form-card">
+        <h1>Verify email</h1>
         <?php if ($done): ?>
             <div class="alert alert-success">Your email is now verified. You can sign in.</div>
-            <p style="text-align:center;margin-top:1rem"><a href="/login.php" class="btn btn-primary">Sign In</a></p>
+            <p style="text-align:center;margin-top:1rem"><a href="/login.php" class="btn btn-primary">Sign in</a></p>
         <?php elseif (!$user): ?>
             <div class="alert alert-error">This verification link is invalid or has expired.</div>
             <p style="text-align:center;margin-top:1rem"><a href="/resend_verification.php">Request a new link</a></p>
         <?php elseif ((int)$user['email_verified'] === 1): ?>
             <div class="alert alert-success">This account is already verified.</div>
-            <p style="text-align:center;margin-top:1rem"><a href="/login.php">Sign In</a></p>
+            <p style="text-align:center;margin-top:1rem"><a href="/login.php">Sign in</a></p>
         <?php else: ?>
             <p class="subtitle">Confirm verification for <strong><?= htmlspecialchars($user['username']) ?></strong>.</p>
-            <?php if ($error): ?>
-                <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
-            <?php endif; ?>
+            <?php if ($error): ?><div class="alert alert-error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
             <form method="post" action="/verify_email.php">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
                 <input type="hidden" name="verify_token" value="<?= htmlspecialchars($token_raw) ?>">
-                <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem">Verify My Email</button>
+                <button type="submit" class="btn btn-primary btn-block btn-lg">Verify my email</button>
             </form>
         <?php endif; ?>
     </div>
-</div>
+</main>
 </body>
 </html>

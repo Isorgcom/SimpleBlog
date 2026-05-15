@@ -1,7 +1,7 @@
 document.addEventListener('click', function(e) {
-    if (!e.target.closest('.nav-dropdown-wrap')) {
-        document.querySelectorAll('.nav-dropdown.open').forEach(function(d) {
-            d.classList.remove('open');
+    if (!e.target.closest('.user-menu')) {
+        document.querySelectorAll('.user-menu.open').forEach(function(m) {
+            m.classList.remove('open');
         });
     }
 });

@@ -19,16 +19,17 @@ if (get_setting('allow_registration', '1') !== '1') {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Registration Closed &mdash; <?= htmlspecialchars($site_name) ?></title>
         <link rel="stylesheet" href="/style.css">
+        <?php require __DIR__ . '/_head.php'; ?>
     </head>
     <body>
-    <nav><div class="nav-top"><a class="brand" href="/"><?= htmlspecialchars($site_name) ?></a></div></nav>
-    <div class="card-wrap">
-        <div class="card" style="text-align:center">
-            <h2>Registration Closed</h2>
+    <?php require __DIR__ . '/_nav.php'; ?>
+    <main class="center-wrap">
+        <div class="form-card" style="text-align:center">
+            <h1>Registration Closed</h1>
             <p class="subtitle">New account registration is not currently available.</p>
-            <a href="/login.php" class="btn btn-primary" style="margin-top:1rem;display:inline-block">Back to Sign In</a>
+            <a href="/login.php" class="btn btn-primary" style="margin-top:1rem">Back to sign in</a>
         </div>
-    </div>
+    </main>
     </body>
     </html>
     <?php
@@ -74,20 +75,16 @@ $site_name = get_setting('site_name', 'SimpleBlog');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up &mdash; <?= htmlspecialchars($site_name) ?></title>
+    <title>Sign up &mdash; <?= htmlspecialchars($site_name) ?></title>
     <link rel="stylesheet" href="/style.css">
+    <?php require __DIR__ . '/_head.php'; ?>
 </head>
 <body>
+<?php require __DIR__ . '/_nav.php'; ?>
 
-<nav>
-    <div class="nav-top">
-        <a class="brand" href="/"><?= htmlspecialchars($site_name) ?></a>
-    </div>
-</nav>
-
-<div class="card-wrap">
-    <div class="card">
-        <h2>Create Account</h2>
+<main class="center-wrap">
+    <div class="form-card">
+        <h1>Create account</h1>
         <p class="subtitle">Join <?= htmlspecialchars($site_name) ?>.</p>
 
         <?php if ($error): ?>
@@ -103,39 +100,29 @@ $site_name = get_setting('site_name', 'SimpleBlog');
                        value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"
                        autocomplete="username" autofocus required
                        pattern="[a-zA-Z0-9_]{3,30}" maxlength="30">
-                <p class="hint">3-30 characters: letters, numbers, underscores only.</p>
+                <p class="hint">3–30 characters: letters, numbers, underscores.</p>
             </div>
-
             <div class="form-group">
-                <label for="email">Email <span style="color:#94a3b8;font-weight:400">(optional)</span></label>
+                <label for="email">Email <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
                 <input type="email" id="email" name="email"
-                       value="<?= htmlspecialchars($_POST['email'] ?? '') ?>"
-                       autocomplete="email">
+                       value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" autocomplete="email">
             </div>
-
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password"
-                       autocomplete="new-password" required minlength="12">
+                <input type="password" id="password" name="password" autocomplete="new-password" required minlength="12">
                 <p class="hint">At least 12 characters.</p>
             </div>
-
             <div class="form-group">
-                <label for="password2">Confirm Password</label>
-                <input type="password" id="password2" name="password2"
-                       autocomplete="new-password" required minlength="12">
+                <label for="password2">Confirm password</label>
+                <input type="password" id="password2" name="password2" autocomplete="new-password" required minlength="12">
             </div>
-
-            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem">
-                Create Account
-            </button>
+            <button type="submit" class="btn btn-primary btn-block btn-lg">Create account</button>
         </form>
 
-        <p style="text-align:center;margin-top:1.25rem;font-size:.875rem;color:#64748b">
+        <p style="text-align:center;margin-top:1.25rem;font-size:.88rem;color:var(--text-muted)">
             Already have an account? <a href="/login.php">Sign in</a>
         </p>
     </div>
-</div>
-
+</main>
 </body>
 </html>

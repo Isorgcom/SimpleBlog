@@ -84,6 +84,7 @@ $site_name = get_setting('site_name', 'SimpleBlog');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings &mdash; <?= htmlspecialchars($site_name) ?></title>
     <link rel="stylesheet" href="/style.css">
+    <?php require __DIR__ . '/_head.php'; ?>
     <style>
         .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         @media (max-width: 640px) { .settings-grid { grid-template-columns: 1fr; } }
@@ -94,7 +95,7 @@ $site_name = get_setting('site_name', 'SimpleBlog');
 <?php $nav_active = 'settings'; $nav_user = $me; require __DIR__ . '/_nav.php'; ?>
 </nav>
 
-<div class="dash-wrap">
+<div class="admin-wrap">
 
     <div class="dash-header">
         <h1>Account Settings</h1>

@@ -44,24 +44,20 @@ $site_name = get_setting('site_name', 'SimpleBlog');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login &mdash; <?= htmlspecialchars($site_name) ?></title>
+    <title>Sign in &mdash; <?= htmlspecialchars($site_name) ?></title>
     <link rel="stylesheet" href="/style.css">
+    <?php require __DIR__ . '/_head.php'; ?>
 </head>
 <body>
+<?php require __DIR__ . '/_nav.php'; ?>
 
-<nav>
-    <div class="nav-top">
-        <a class="brand" href="/"><?= htmlspecialchars($site_name) ?></a>
-    </div>
-</nav>
-
-<div class="card-wrap">
-    <div class="card">
-        <h2>Sign In</h2>
-        <p class="subtitle">Enter your credentials to access the dashboard.</p>
+<main class="center-wrap">
+    <div class="form-card">
+        <h1>Sign in</h1>
+        <p class="subtitle">Welcome back.</p>
 
         <?php if (($_GET['registered'] ?? '') === 'pending'): ?>
-            <div class="alert alert-success">Account created! Check your email for a verification link before signing in.</div>
+            <div class="alert alert-success">Account created. Check your email for a verification link before signing in.</div>
         <?php endif; ?>
         <?php if ($error): ?>
             <div class="alert alert-error">
@@ -74,37 +70,28 @@ $site_name = get_setting('site_name', 'SimpleBlog');
 
         <form method="post" action="/login.php" novalidate>
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
-
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username"
                        value="<?= htmlspecialchars($_POST['username'] ?? '') ?>"
                        autocomplete="username" autofocus required>
             </div>
-
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password"
-                       autocomplete="current-password" required>
+                <input type="password" id="password" name="password" autocomplete="current-password" required>
             </div>
-
-            <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.5rem">
-                Sign In
-            </button>
+            <button type="submit" class="btn btn-primary btn-block btn-lg">Sign in</button>
         </form>
 
-        <p style="text-align:center;margin-top:1rem;font-size:.875rem;color:#64748b">
+        <p style="text-align:center;margin-top:1.25rem;font-size:.88rem;color:var(--text-muted)">
             <a href="/forgot_password.php">Forgot password?</a>
         </p>
-
         <?php if (get_setting('allow_registration', '1') === '1'): ?>
-        <p style="text-align:center;margin-top:.5rem;font-size:.875rem;color:#64748b">
+        <p style="text-align:center;margin-top:.4rem;font-size:.88rem;color:var(--text-muted)">
             Don't have an account? <a href="/register.php">Sign up</a>
         </p>
         <?php endif; ?>
-
     </div>
-</div>
-
+</main>
 </body>
 </html>
