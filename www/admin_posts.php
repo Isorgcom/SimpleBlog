@@ -42,6 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 : (new DateTime('now', $utc_tz))->format('Y-m-d H:i:s');
             $db->prepare('INSERT INTO posts (title, content, created_at) VALUES (?, ?, ?)')
                ->execute([$title, $content, $dt]);
+            $newId = (int)$db->lastInsertId();
+            $db->prepare('UPDATE posts SET slug = ? WHERE id = ?')
+               ->execute([unique_post_slug($db, $title, $newId), $newId]);
             db_log_activity($current['id'], "created post: $title");
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Post published.'];
         }

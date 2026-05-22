@@ -216,12 +216,11 @@ img { max-width: 100%; height: auto; }
 
 /* ---------- Nav ---------- */
 nav {
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
+    background: var(--accent);
+    border-bottom: 1px solid color-mix(in srgb, var(--accent-on) 18%, transparent);
     position: sticky;
     top: 0;
     z-index: 100;
-    backdrop-filter: saturate(180%) blur(8px);
 }
 
 .nav-top {
@@ -239,19 +238,30 @@ nav {
     font-family: var(--font-serif);
     font-weight: 600;
     font-size: 1.25rem;
-    color: var(--text);
+    color: var(--accent-on);
     letter-spacing: -.01em;
     display: flex;
     align-items: center;
     gap: .6rem;
 }
-.brand:hover { text-decoration: none; color: var(--text); }
+.brand:hover { text-decoration: none; color: var(--accent-on); }
 .brand img { max-height: 36px; width: auto; display: block; }
 
 .nav-actions {
     display: flex;
     align-items: center;
     gap: .5rem;
+}
+/* Sign-in button (logged-out) sits on the accent bar */
+.nav-actions .btn-outline {
+    background: transparent;
+    color: var(--accent-on);
+    border-color: color-mix(in srgb, var(--accent-on) 45%, transparent);
+}
+.nav-actions .btn-outline:hover {
+    background: color-mix(in srgb, var(--accent-on) 16%, transparent);
+    color: var(--accent-on);
+    border-color: var(--accent-on);
 }
 
 .nav-links {
@@ -289,14 +299,14 @@ nav {
     height: 36px;
     display: inline-grid;
     place-items: center;
-    border: 1px solid var(--border);
-    background: var(--surface);
+    border: 1px solid color-mix(in srgb, var(--accent-on) 28%, transparent);
+    background: transparent;
     border-radius: var(--radius-sm);
     cursor: pointer;
-    color: var(--text-soft);
+    color: var(--accent-on);
     transition: background .15s, color .15s, border-color .15s;
 }
-.theme-toggle:hover { background: var(--bg-soft); color: var(--text); }
+.theme-toggle:hover { background: color-mix(in srgb, var(--accent-on) 16%, transparent); color: var(--accent-on); }
 .theme-toggle svg { width: 18px; height: 18px; }
 :root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
 :root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
@@ -309,21 +319,21 @@ nav {
     align-items: center;
     gap: .5rem;
     padding: .4rem .65rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--accent-on) 28%, transparent);
     border-radius: var(--radius-sm);
     cursor: pointer;
-    color: var(--text);
+    color: var(--accent-on);
     font-size: .9rem;
     font-family: inherit;
 }
-.user-menu-btn:hover { background: var(--bg-soft); }
+.user-menu-btn:hover { background: color-mix(in srgb, var(--accent-on) 16%, transparent); }
 .user-menu-btn .avatar {
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: var(--accent);
-    color: var(--accent-on);
+    background: var(--accent-on);
+    color: var(--accent);
     display: grid;
     place-items: center;
     font-size: .7rem;
@@ -587,6 +597,8 @@ h1, h2, h3, h4 {
 }
 .post-title a { color: inherit; }
 .post-title a:hover { color: var(--accent); text-decoration: none; }
+.post-permalink { text-decoration: none; opacity: .5; font-size: .9em; }
+.post-permalink:hover { opacity: 1; text-decoration: none; }
 
 .post-actions {
     display: flex;

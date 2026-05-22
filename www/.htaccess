@@ -4,8 +4,12 @@ Options -Indexes
 # Hide PHP errors from the browser
 php_flag display_errors Off
 
+# Pretty permalinks: /post/<slug> -> post.php?slug=<slug>
+RewriteEngine On
+RewriteRule ^post/([A-Za-z0-9_-]+)/?$ post.php?slug=$1 [L,QSA]
+
 # Block direct web access to internal/partial PHP files
-<FilesMatch "^(auth|db|_nav|config|mail)\.php$">
+<FilesMatch "^(auth|db|_nav|_head|_post_article|_comments_script|config|mail)\.php$">
     Require all denied
 </FilesMatch>
 

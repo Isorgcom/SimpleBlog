@@ -3,6 +3,28 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.5.0] — 2026-05-22 — Post permalinks + header refresh
+
+### Added
+- **Post permalinks.** Every post now has a stable slug-based URL
+  (`/post/<slug>`) and a dedicated single-post page (`www/post.php`). The post
+  title links to it and a 🔗 icon sits in the post meta. Slugs are generated
+  from the title (`slugify()` / `unique_post_slug()` in `db.php`), backfilled
+  for existing posts, and kept stable across title edits so links don't break.
+  Pretty URLs use an `.htaccess` rewrite + `mod_rewrite`, now enabled in the
+  Dockerfile — **deploying this version requires an image rebuild**
+  (`docker compose up -d --build`), not just a code swap.
+
+### Changed
+- **Header refresh.** The nav bar is tinted with the active theme's accent
+  color (brand/toggle/avatar in contrasting text), so the selected theme is
+  obvious. The top bar was slimmed to brand · theme-toggle · avatar: the Home
+  link was removed (the logo links home) and the admin Posts / Site Settings
+  links moved into the avatar dropdown.
+- **Shared rendering.** The post-article markup and comment JavaScript were
+  extracted into `_post_article.php` and `_comments_script.php`, now shared by
+  the homepage, the infinite-scroll chunks, and the single-post page.
+
 ## [0.4.0] — 2026-05-22 — Selectable themes
 
 ### Added
@@ -213,6 +235,7 @@ are intentionally out of scope.
   comments (10/IP/5min), forgot-password (3/IP/hr),
   resend-verification (3/IP/hr). [medium]
 
+[0.5.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.5.0
 [0.4.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.4.0
 [0.3.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.3.0
 [0.2.2]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.2.2

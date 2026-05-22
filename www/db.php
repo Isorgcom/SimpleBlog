@@ -76,6 +76,7 @@ function db_init(PDO $pdo): void {
 
     try { $pdo->exec("ALTER TABLE posts ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0"); } catch (Exception $e) {}
     try { $pdo->exec("ALTER TABLE posts ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE posts ADD COLUMN slug TEXT"); } catch (Exception $e) {}
 
     try { $pdo->exec("ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0"); } catch (Exception $e) {}
     try { $pdo->exec("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 1"); } catch (Exception $e) {}
@@ -93,6 +94,14 @@ function db_init(PDO $pdo): void {
             $pdo->exec("DROP TABLE IF EXISTS events");
             $pdo->exec("DELETE FROM site_settings WHERE key='show_upcoming_events'");
             $pdo->prepare("INSERT INTO site_settings (key, value) VALUES ('calendar_removed_v1', '1')")->execute();
+        }
+    } catch (Exception $e) {}
+
+    // Backfill permalink slugs for any post missing one (slug is stable once set).
+    try {
+        foreach ($pdo->query("SELECT id, title FROM posts WHERE slug IS NULL OR slug = ''")->fetchAll() as $p) {
+            $pdo->prepare("UPDATE posts SET slug = ? WHERE id = ?")
+                ->execute([unique_post_slug($pdo, $p['title'], (int)$p['id']), (int)$p['id']]);
         }
     } catch (Exception $e) {}
 
@@ -134,6 +143,33 @@ function set_setting(string $key, string $value): void {
     get_db()->prepare('INSERT INTO site_settings (key, value) VALUES (?, ?)
         ON CONFLICT(key) DO UPDATE SET value = excluded.value')
         ->execute([$key, $value]);
+}
+
+/**
+ * URL-safe slug from a title: lowercase ASCII, non-alphanumerics → hyphens.
+ */
+function slugify(string $s): string {
+    if (function_exists('iconv')) {
+        $t = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
+        if ($t !== false) $s = $t;
+    }
+    $s = strtolower($s);
+    $s = preg_replace('/[^a-z0-9]+/', '-', $s);
+    $s = trim($s, '-');
+    $s = substr($s, 0, 80);
+    $s = trim($s, '-');
+    return $s !== '' ? $s : 'post';
+}
+
+/**
+ * A slug for $title that is unique among posts (excluding $id). On collision the
+ * post id is appended, so the result is deterministic and permanent.
+ */
+function unique_post_slug(PDO $db, string $title, int $id): string {
+    $base = slugify($title);
+    $stmt = $db->prepare("SELECT COUNT(*) FROM posts WHERE slug = ? AND id <> ?");
+    $stmt->execute([$base, $id]);
+    return ((int)$stmt->fetchColumn() === 0) ? $base : $base . '-' . $id;
 }
 
 /**
