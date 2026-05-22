@@ -600,6 +600,12 @@ h1, h2, h3, h4 {
 .post-permalink { text-decoration: none; opacity: .5; font-size: .9em; }
 .post-permalink:hover { opacity: 1; text-decoration: none; }
 
+/* Rich-text (Jodit) editor stays a light "paper" surface; in dark mode the page's
+   light text color would otherwise leak in and render typed text near-invisible. */
+:root[data-theme="dark"] .jodit-wysiwyg,
+:root[data-theme="dark"] .jodit-wysiwyg * { color: #1e293b; }
+:root[data-theme="dark"] .jodit-wysiwyg { background: #ffffff; }
+
 .post-actions {
     display: flex;
     gap: .35rem;

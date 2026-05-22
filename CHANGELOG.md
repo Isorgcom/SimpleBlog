@@ -3,6 +3,16 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.5.1] — 2026-05-22 — Fixes
+
+### Fixed
+- **Dark-mode post editor** — in dark mode the page's light text color leaked
+  into the Jodit editor's content area, rendering typed text near-invisible.
+  The editor now keeps dark text on a white "paper" surface in dark mode. [low]
+- **Upgrade docs** — the README upgrade guide now distinguishes code-only `www/`
+  swaps from releases that change root files (`Dockerfile`/`nginx.conf`/
+  `docker-compose.yml`), which must be deployed **and** rebuilt (`--build`).
+
 ## [0.5.0] — 2026-05-22 — Post permalinks + header refresh
 
 ### Added
@@ -235,6 +245,7 @@ are intentionally out of scope.
   comments (10/IP/5min), forgot-password (3/IP/hr),
   resend-verification (3/IP/hr). [medium]
 
+[0.5.1]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.5.1
 [0.5.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.5.0
 [0.4.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.4.0
 [0.3.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.3.0

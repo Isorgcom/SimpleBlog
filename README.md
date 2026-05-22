@@ -91,41 +91,53 @@ installs aren't soft-bricked.
 
 ## Upgrading
 
-The application code in `www/` is bind-mounted, so an upgrade is just
-swapping those files for a newer release. Your data (`db/`), uploads
-(`www/uploads/`), and `config/` are **separate mounts and are preserved**.
-The SQLite schema migrates itself on the next request — `db_init()` in
-`db.php` runs `CREATE TABLE IF NOT EXISTS` plus idempotent `ALTER`s and any
-data migrations.
+The app code in `www/` is bind-mounted, so **most** releases upgrade by just
+swapping `www/` and restarting — no rebuild, since `www/` is live. Your data
+(`db/`), uploads (`www/uploads/`), and `config/` are separate mounts and are
+preserved. The SQLite schema migrates itself on the first request after restart
+(`db_init()` in `db.php`: `CREATE TABLE IF NOT EXISTS` + idempotent `ALTER`s).
+
+**Some releases also change root-level files** (`Dockerfile`, `nginx.conf`,
+`docker-compose.yml`) — e.g. enabling an Apache module. Those live **outside**
+`www/`, are baked into the image, and require deploying the changed file **and**
+rebuilding (`--build`); a code-only `www/` swap is not enough and can even break
+the site (a new `.htaccess` directive needs its module enabled in the image).
+The release notes / CHANGELOG flag these. Before upgrading, check what changed
+outside `www/`: `git diff vOLD vNEW -- Dockerfile nginx.conf docker-compose.yml`.
 
 **Always back up first — the schema migration is one-way.**
 
-1. **Back up** data, config, and the current code (for rollback):
+1. **Back up** data, config, code, and the root files (for rollback):
    ```sh
    cd /path/to/simpleblog
    docker compose stop          # quiesce SQLite for a clean copy
-   tar czf ../simpleblog-backup-$(date +%F-%H%M%S).tar.gz db config www
+   tar czf ../simpleblog-backup-$(date +%F-%H%M%S).tar.gz \
+       db config www Dockerfile docker-compose.yml nginx.conf
    ```
-2. **Get the new code** into `www/`:
-   - Deployed from a git clone: `git fetch --tags && git checkout vX.Y.Z`
-     (or `git pull` for the latest `main`).
-   - Deployed by copying files: `rsync` the new release's `www/` over yours,
-     **excluding `uploads/`**, then delete files removed upstream (older
-     installs may still carry e.g. `calendar.php` or a stray `index.html`):
+2. **Get the new code.**
+   - From a git clone: `git fetch --tags && git checkout vX.Y.Z` — updates
+     *everything* (code **and** root files) at once. Simplest.
+   - By copying files: sync the release's `www/` over yours, **excluding
+     `uploads/`**, and delete files dropped upstream (older installs may carry
+     e.g. `calendar.php`). **If the release changed any root file, copy it too**
+     (keep your own `docker-compose.yml`/`nginx.conf` if they're
+     deployment-specific):
      ```sh
      rsync -a --exclude 'uploads/' /path/to/new/www/ ./www/
+     cp /path/to/new/Dockerfile ./Dockerfile        # only if it changed
      ```
-3. **Restart** — the DB migrates on the first request:
-   ```sh
-   docker compose up -d         # add --build only if the Dockerfile changed
-   ```
-   Because `www/` is live-mounted, a rebuild is usually unnecessary.
+3. **Restart** (DB migrates on the first request):
+   - Code-only release: `docker compose up -d` — no rebuild needed.
+   - Release that changed the `Dockerfile`: `docker compose up -d --build` —
+     rebuilds so the change takes effect. The new `Dockerfile` must already be in
+     place from step 2, or the rebuild silently uses the old one.
 4. **Verify**: the footer shows the new `vX.Y.Z`, posts/users/comments are
    intact, admin login works, and `docker logs <container>` shows no PHP
    errors.
 
-**Rollback**: `docker compose stop`, restore `www/` and `db/` from the backup
-tarball, then `docker compose up -d`.
+**Rollback**: `docker compose stop`, restore `www/`, `db/`, and any changed root
+files from the backup tarball, then `docker compose up -d` (add `--build` if you
+restored the `Dockerfile`).
 
 ### Update notifications
 
