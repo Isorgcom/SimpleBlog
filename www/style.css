@@ -244,6 +244,9 @@
     position: relative;
     z-index: 3;
 }
+/* The hover-lift transform creates a stacking context that would re-trap raised
+   images under the overlay on hover — drop it here so images stay clean. */
+:root[data-palette="amber"] .post-article:hover { transform: none; }
 /* terminal header: black bar with an amber rule, not a solid amber slab */
 :root[data-palette="amber"] nav { background: var(--bg); border-bottom: 1px solid var(--accent); }
 :root[data-palette="amber"] .brand,

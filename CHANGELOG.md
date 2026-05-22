@@ -3,6 +3,14 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.6.2] — 2026-05-22 — Amber CRT polish
+
+### Fixed
+- **Amber CRT** — hovering a post no longer re-covers its images with the
+  scanline overlay. The post card's hover-lift `transform` (which created a
+  stacking context that re-trapped raised images under the overlay) is dropped
+  in this theme; the border/shadow hover feedback is kept.
+
 ## [0.6.1] — 2026-05-22 — Amber CRT polish
 
 ### Fixed
@@ -267,6 +275,7 @@ are intentionally out of scope.
   comments (10/IP/5min), forgot-password (3/IP/hr),
   resend-verification (3/IP/hr). [medium]
 
+[0.6.2]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.6.2
 [0.6.1]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.6.1
 [0.6.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.6.0
 [0.5.1]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.5.1
