@@ -65,6 +65,21 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'IBM Plex Mono';
+    src: url('/vendor/fonts/ibm-plex-mono.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'IBM Plex Mono';
+    src: url('/vendor/fonts/ibm-plex-mono-700.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* ---------- Tokens (light is default) ---------- */
 :root {
     --bg:        #f5f6f8;
@@ -187,6 +202,63 @@
     --text: #ece7f6; --text-soft: #ab9fc4; --text-muted: #7d7299;
     --accent: #a78bfa; --accent-h: #c4b5fd; --accent-on: #1a1030; --accent-soft: rgba(167,139,250,.15);
 }
+
+/* ============================================================
+   Amber CRT — retro amber-phosphor monitor (slug "amber").
+   Always dark: the palette is set for light AND dark, and scoped screen
+   effects (glow, scanlines, vignette, terminal header) layer on top.
+   ============================================================ */
+:root[data-palette="amber"],
+:root[data-palette="amber"][data-theme="dark"] {
+    --bg: #140d00; --bg-soft: #1c1300; --surface: #1a1100; --border: #4a3300; --divider: #3a2800;
+    --text: #ffb000; --text-soft: #cc8c00; --text-muted: #9a6a00;
+    --accent: #ffb000; --accent-h: #ffc640; --accent-on: #140d00; --accent-soft: rgba(255,176,0,.12);
+    --font-sans:  'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-serif: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-mono:  'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+/* phosphor glow */
+:root[data-palette="amber"] body { text-shadow: 0 0 1px rgba(255, 176, 0, .45); }
+:root[data-palette="amber"] .brand,
+:root[data-palette="amber"] .post-title,
+:root[data-palette="amber"] h1,
+:root[data-palette="amber"] h2,
+:root[data-palette="amber"] h3 { text-shadow: 0 0 6px rgba(255, 176, 0, .4); }
+/* scanlines — a faint 1px dark line every 3px */
+:root[data-palette="amber"] body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+    background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, .16) 2px 3px);
+}
+/* curved-tube edge vignette */
+:root[data-palette="amber"] body::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .5) 100%);
+}
+/* terminal header: black bar with an amber rule, not a solid amber slab */
+:root[data-palette="amber"] nav { background: var(--bg); border-bottom: 1px solid var(--accent); }
+:root[data-palette="amber"] .brand,
+:root[data-palette="amber"] .brand:hover,
+:root[data-palette="amber"] .theme-toggle,
+:root[data-palette="amber"] .user-menu-btn,
+:root[data-palette="amber"] .nav-actions .btn-outline {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+:root[data-palette="amber"] .theme-toggle:hover,
+:root[data-palette="amber"] .user-menu-btn:hover,
+:root[data-palette="amber"] .nav-actions .btn-outline:hover {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+:root[data-palette="amber"] .user-menu-btn .avatar { background: var(--accent); color: var(--accent-on); }
+:root[data-palette="amber"] .brand::before { content: "> "; opacity: .8; }
+/* brighter, glowing site title — CRT phosphor bloom */
+:root[data-palette="amber"] .brand,
+:root[data-palette="amber"] .brand:hover {
+    color: #ffd24a;
+    text-shadow: 0 0 4px rgba(255, 176, 0, .95), 0 0 12px rgba(255, 176, 0, .6), 0 0 22px rgba(255, 140, 0, .35);
+}
+/* keep the post editor a readable light surface in amber too */
+:root[data-palette="amber"] .jodit-wysiwyg { background: #ffffff; color: #1e293b; }
 
 /* ---------- Reset ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -833,8 +905,8 @@ body > footer {
     gap: 1rem;
 }
 .site-footer .meta { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
-.site-footer details { color: var(--text-soft); }
-.site-footer details summary {
+.archive { color: var(--text-soft); margin-bottom: 1.75rem; position: relative; }
+.archive summary {
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -843,29 +915,46 @@ body > footer {
     color: var(--text);
     list-style: none;
 }
-.site-footer details summary::-webkit-details-marker { display: none; }
-.site-footer details[open] summary { color: var(--accent); }
-.site-footer details summary::after {
+.archive summary::-webkit-details-marker { display: none; }
+.archive[open] summary { color: var(--accent); }
+.archive summary::after {
     content: "▾";
     transition: transform .15s;
     font-size: .8em;
 }
-.site-footer details[open] summary::after { transform: rotate(180deg); }
-.site-footer .archive-list {
+.archive[open] summary::after { transform: rotate(180deg); }
+/* Open archive = a floating, scrollable dropdown that overlays the page
+   (absolute, so it never pushes the post content down). */
+.archive-list {
+    position: absolute;
+    top: calc(100% + .4rem);
+    left: 0;
+    z-index: 50;
+    min-width: 200px;
+    max-height: 60vh;
+    overflow-y: auto;
     display: flex;
-    flex-wrap: wrap;
-    gap: .35rem .75rem;
-    margin-top: .8rem;
-    font-size: .82rem;
+    flex-direction: column;
+    gap: .1rem;
+    padding: .4rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+    font-size: .85rem;
 }
-.site-footer .archive-list a {
+.archive-list a {
+    display: block;
+    padding: .3rem .55rem;
+    border-radius: 6px;
     color: var(--text-soft);
+    white-space: nowrap;
 }
-.site-footer .archive-list a:hover { color: var(--accent); }
-.site-footer .archive-list .count {
+.archive-list a:hover { color: var(--accent); background: var(--bg-soft); text-decoration: none; }
+.archive-list .count {
     color: var(--text-muted);
     font-size: .8em;
-    margin-left: 2px;
+    margin-left: .4rem;
 }
 
 /* ---------- Admin: tabs ---------- */

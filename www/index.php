@@ -60,6 +60,22 @@ $tlMonths = $tlStmt->fetchAll();
 
 <main class="read-wrap">
 
+    <?php if (!empty($tlMonths)): ?>
+    <details class="archive">
+        <summary>Archive</summary>
+        <div class="archive-list">
+            <?php foreach ($tlMonths as $row):
+                [$y, $m] = explode('-', $row['ym']);
+                $label = date('M Y', mktime(0, 0, 0, (int)$m, 1, (int)$y));
+            ?>
+            <a href="/?month=<?= htmlspecialchars($row['ym']) ?>"<?= $monthFilter === $row['ym'] ? ' style="color:var(--accent)"' : '' ?>>
+                <?= htmlspecialchars($label) ?><span class="count">(<?= (int)$row['cnt'] ?>)</span>
+            </a>
+            <?php endforeach; ?>
+        </div>
+    </details>
+    <?php endif; ?>
+
     <?php if ($monthFilter): ?>
     <div class="filter-banner">
         <span>Showing posts from <strong><?= htmlspecialchars(date('F Y', mktime(0,0,0,(int)explode('-',$monthFilter)[1],1,(int)explode('-',$monthFilter)[0]))) ?></strong></span>
@@ -94,22 +110,9 @@ $tlMonths = $tlStmt->fetchAll();
             <span>&copy; <?= (new DateTime('now', $local_tz))->format('Y') ?> <?= htmlspecialchars($site_name) ?></span>
             <span class="dot">·</span>
             <span>v<?= htmlspecialchars(APP_VERSION) ?></span>
+            <span class="dot">·</span>
+            <a href="https://github.com/Isorgcom/SimpleBlog" target="_blank" rel="noopener">Source</a>
         </div>
-        <?php if (!empty($tlMonths)): ?>
-        <details>
-            <summary>Archive</summary>
-            <div class="archive-list">
-                <?php foreach ($tlMonths as $row):
-                    [$y, $m] = explode('-', $row['ym']);
-                    $label = date('M Y', mktime(0, 0, 0, (int)$m, 1, (int)$y));
-                ?>
-                <a href="/?month=<?= htmlspecialchars($row['ym']) ?>"<?= $monthFilter === $row['ym'] ? ' style="color:var(--accent)"' : '' ?>>
-                    <?= htmlspecialchars($label) ?><span class="count">(<?= (int)$row['cnt'] ?>)</span>
-                </a>
-                <?php endforeach; ?>
-            </div>
-        </details>
-        <?php endif; ?>
     </footer>
 
 </main>

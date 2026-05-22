@@ -271,7 +271,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             $theme = $_POST['site_theme'] ?? '';
-            if (in_array($theme, ['editorial', 'evergreen', 'ember', 'ink', 'plum'], true)) {
+            if (in_array($theme, ['editorial', 'evergreen', 'ember', 'ink', 'plum', 'amber'], true)) {
                 set_setting('site_theme', $theme);
             }
             db_log_activity($current['id'], 'updated appearance');
@@ -600,7 +600,7 @@ if ($tab === 'dashboard') {
                     <input type="hidden" name="action" value="appearance">
                     <input type="hidden" name="tab" value="appearance">
                     <?php
-                    $__themes = ['editorial' => 'Editorial', 'evergreen' => 'Evergreen', 'ember' => 'Ember', 'ink' => 'Ink', 'plum' => 'Plum'];
+                    $__themes = ['editorial' => 'Editorial', 'evergreen' => 'Evergreen', 'ember' => 'Ember', 'ink' => 'Ink', 'plum' => 'Plum', 'amber' => 'Amber CRT'];
                     $__cur_theme = get_setting('site_theme', 'editorial');
                     ?>
                     <div class="form-group">

@@ -3,6 +3,20 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.6.0] — 2026-05-22 — Amber CRT theme + homepage tweaks
+
+### Added
+- **Amber CRT theme** — a 6th selectable theme: a retro amber-phosphor terminal
+  look (amber-on-near-black, IBM Plex Mono throughout, subtle text glow, faint
+  scanlines + edge vignette, a terminal-style header with a `>` prompt and a
+  brighter glowing site title). Always dark, regardless of the light/dark toggle.
+
+### Changed
+- **Homepage archive** moved from the footer to the top of the page, and now
+  opens as a floating, scrollable dropdown that overlays the content instead of
+  pushing it down.
+- **Footer** gained a **Source** link to the GitHub repository.
+
 ## [0.5.1] — 2026-05-22 — Fixes
 
 ### Fixed
@@ -245,6 +259,7 @@ are intentionally out of scope.
   comments (10/IP/5min), forgot-password (3/IP/hr),
   resend-verification (3/IP/hr). [medium]
 
+[0.6.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.6.0
 [0.5.1]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.5.1
 [0.5.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.5.0
 [0.4.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.4.0
