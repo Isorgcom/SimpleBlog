@@ -913,7 +913,7 @@ h1, h2, h3, h4 {
 }
 .site-footer .meta { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
 .archive { color: var(--text-soft); margin-bottom: 1.75rem; position: relative; }
-.archive summary {
+.archive > summary {
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -922,27 +922,26 @@ h1, h2, h3, h4 {
     color: var(--text);
     list-style: none;
 }
-.archive summary::-webkit-details-marker { display: none; }
-.archive[open] summary { color: var(--accent); }
-.archive summary::after {
+.archive > summary::-webkit-details-marker { display: none; }
+.archive[open] > summary { color: var(--accent); }
+.archive > summary::after {
     content: "▾";
     transition: transform .15s;
     font-size: .8em;
 }
-.archive[open] summary::after { transform: rotate(180deg); }
-/* Open archive = a floating, scrollable dropdown that overlays the page
+.archive[open] > summary::after { transform: rotate(180deg); }
+
+/* Open archive = a floating, scrollable Year › Month › Post tree overlaying the page
    (absolute, so it never pushes the post content down). */
-.archive-list {
+.archive-tree {
     position: absolute;
     top: calc(100% + .4rem);
     left: 0;
     z-index: 50;
-    min-width: 200px;
+    min-width: 240px;
+    max-width: 360px;
     max-height: 60vh;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: .1rem;
     padding: .4rem;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -950,19 +949,39 @@ h1, h2, h3, h4 {
     box-shadow: var(--shadow);
     font-size: .85rem;
 }
-.archive-list a {
-    display: block;
-    padding: .3rem .55rem;
+.archive-tree summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .25rem .5rem;
     border-radius: 6px;
     color: var(--text-soft);
     white-space: nowrap;
 }
-.archive-list a:hover { color: var(--accent); background: var(--bg-soft); text-decoration: none; }
-.archive-list .count {
-    color: var(--text-muted);
-    font-size: .8em;
-    margin-left: .4rem;
+.archive-tree summary::-webkit-details-marker { display: none; }
+.archive-tree summary::before {
+    content: "▸";
+    font-size: .75em;
+    opacity: .6;
+    transition: transform .15s;
 }
+.archive-tree details[open] > summary::before { transform: rotate(90deg); }
+.archive-tree summary:hover { color: var(--accent); background: var(--bg-soft); }
+.arch-month > summary { padding-left: 1.5rem; }
+.arch-posts { list-style: none; }
+.arch-posts a {
+    display: block;
+    padding: .25rem .5rem .25rem 2.5rem;
+    border-radius: 6px;
+    color: var(--text-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.arch-posts a:hover { color: var(--accent); background: var(--bg-soft); text-decoration: none; }
+.archive-tree .count { color: var(--text-muted); font-size: .8em; margin-left: .3rem; }
 
 /* ---------- Admin: tabs ---------- */
 .tabs {

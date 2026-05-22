@@ -38,12 +38,17 @@ $csrf    = csrf_token();
 $isAdmin = $user && $user['role'] === 'admin';
 
 $tlStmt = $db->prepare(
-    "SELECT strftime('%Y-%m', datetime(created_at)) AS ym, COUNT(*) AS cnt
+    "SELECT id, title, slug,
+            strftime('%Y', datetime(created_at)) AS yr,
+            strftime('%m', datetime(created_at)) AS mo
      FROM posts WHERE created_at <= ? AND hidden = 0
-     GROUP BY ym ORDER BY ym DESC"
+     ORDER BY created_at DESC"
 );
 $tlStmt->execute([$now]);
-$tlMonths = $tlStmt->fetchAll();
+$archive = [];   // year => month-number => [posts], all newest-first
+foreach ($tlStmt->fetchAll() as $r) {
+    $archive[$r['yr']][$r['mo']][] = $r;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -60,17 +65,24 @@ $tlMonths = $tlStmt->fetchAll();
 
 <main class="read-wrap">
 
-    <?php if (!empty($tlMonths)): ?>
+    <?php if (!empty($archive)): ?>
     <details class="archive">
         <summary>Archive</summary>
-        <div class="archive-list">
-            <?php foreach ($tlMonths as $row):
-                [$y, $m] = explode('-', $row['ym']);
-                $label = date('M Y', mktime(0, 0, 0, (int)$m, 1, (int)$y));
-            ?>
-            <a href="/?month=<?= htmlspecialchars($row['ym']) ?>"<?= $monthFilter === $row['ym'] ? ' style="color:var(--accent)"' : '' ?>>
-                <?= htmlspecialchars($label) ?><span class="count">(<?= (int)$row['cnt'] ?>)</span>
-            </a>
+        <div class="archive-tree">
+            <?php foreach ($archive as $yr => $months): ?>
+            <details class="arch-year">
+                <summary><?= htmlspecialchars($yr) ?><span class="count">(<?= array_sum(array_map('count', $months)) ?>)</span></summary>
+                <?php foreach ($months as $mo => $mposts): ?>
+                <details class="arch-month">
+                    <summary><?= htmlspecialchars(date('F', mktime(0, 0, 0, (int)$mo, 1))) ?><span class="count">(<?= count($mposts) ?>)</span></summary>
+                    <ul class="arch-posts">
+                        <?php foreach ($mposts as $p): ?>
+                        <li><a href="/post/<?= rawurlencode($p['slug']) ?>" title="<?= htmlspecialchars($p['title']) ?>"><?= htmlspecialchars($p['title']) ?></a></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </details>
+                <?php endforeach; ?>
+            </details>
             <?php endforeach; ?>
         </div>
     </details>

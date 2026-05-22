@@ -3,6 +3,14 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.7.1] — 2026-05-22 — Year/Month/Post archive
+
+### Changed
+- **Archive** is now a **Year → Month → Post** tree. Expanding a year reveals its
+  months (with counts), and expanding a month lists that month's posts linking to
+  their permalinks. Built from nested native `<details>` (no JS), still a floating,
+  scrollable overlay.
+
 ## [0.7.0] — 2026-05-22 — App-shell layout
 
 ### Changed
@@ -287,6 +295,7 @@ are intentionally out of scope.
   comments (10/IP/5min), forgot-password (3/IP/hr),
   resend-verification (3/IP/hr). [medium]
 
+[0.7.1]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.7.1
 [0.7.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.7.0
 [0.6.2]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.6.2
 [0.6.1]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.6.1
