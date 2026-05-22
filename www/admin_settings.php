@@ -569,14 +569,12 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
                         <div style="display:flex;gap:.5rem;align-items:center">
                             <input type="color" id="nav_bg_picker"
                                    value="<?= htmlspecialchars(get_setting('nav_bg_color','') ?: '#0f172a') ?>"
-                                   style="width:40px;height:38px;padding:2px;border:1.5px solid #e2e8f0;border-radius:7px;cursor:pointer;flex-shrink:0"
-                                   oninput="syncText('nav_bg_color',this.value);updatePreview()">
+                                   style="width:40px;height:38px;padding:2px;border:1.5px solid #e2e8f0;border-radius:7px;cursor:pointer;flex-shrink:0">
                             <input type="text" name="nav_bg_color" id="nav_bg_color"
                                    value="<?= htmlspecialchars(get_setting('nav_bg_color','')) ?>"
-                                   placeholder="#0f172a" maxlength="7" style="flex:1"
-                                   oninput="syncPicker('nav_bg_picker',this.value);updatePreview()">
+                                   placeholder="#0f172a" maxlength="7" style="flex:1">
                             <button type="button" class="btn btn-outline btn-sm"
-                                    onclick="resetColor('nav_bg_color','nav_bg_picker','#0f172a')">Default</button>
+                                    data-reset-text="nav_bg_color" data-reset-picker="nav_bg_picker" data-reset-default="#0f172a">Default</button>
                         </div>
                     </div>
                     <div class="form-group">
@@ -584,14 +582,12 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
                         <div style="display:flex;gap:.5rem;align-items:center">
                             <input type="color" id="nav_text_picker"
                                    value="<?= htmlspecialchars(get_setting('nav_text_color','') ?: '#ffffff') ?>"
-                                   style="width:40px;height:38px;padding:2px;border:1.5px solid #e2e8f0;border-radius:7px;cursor:pointer;flex-shrink:0"
-                                   oninput="syncText('nav_text_color',this.value);updatePreview()">
+                                   style="width:40px;height:38px;padding:2px;border:1.5px solid #e2e8f0;border-radius:7px;cursor:pointer;flex-shrink:0">
                             <input type="text" name="nav_text_color" id="nav_text_color"
                                    value="<?= htmlspecialchars(get_setting('nav_text_color','')) ?>"
-                                   placeholder="#ffffff" maxlength="7" style="flex:1"
-                                   oninput="syncPicker('nav_text_picker',this.value);updatePreview()">
+                                   placeholder="#ffffff" maxlength="7" style="flex:1">
                             <button type="button" class="btn btn-outline btn-sm"
-                                    onclick="resetColor('nav_text_color','nav_text_picker','#ffffff')">Default</button>
+                                    data-reset-text="nav_text_color" data-reset-picker="nav_text_picker" data-reset-default="#ffffff">Default</button>
                         </div>
                     </div>
                     <div class="form-group">
@@ -599,14 +595,12 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
                         <div style="display:flex;gap:.5rem;align-items:center">
                             <input type="color" id="accent_picker"
                                    value="<?= htmlspecialchars(get_setting('accent_color','') ?: '#2563eb') ?>"
-                                   style="width:40px;height:38px;padding:2px;border:1.5px solid #e2e8f0;border-radius:7px;cursor:pointer;flex-shrink:0"
-                                   oninput="syncText('accent_color',this.value);updatePreview()">
+                                   style="width:40px;height:38px;padding:2px;border:1.5px solid #e2e8f0;border-radius:7px;cursor:pointer;flex-shrink:0">
                             <input type="text" name="accent_color" id="accent_color"
                                    value="<?= htmlspecialchars(get_setting('accent_color','')) ?>"
-                                   placeholder="#2563eb" maxlength="7" style="flex:1"
-                                   oninput="syncPicker('accent_picker',this.value);updatePreview()">
+                                   placeholder="#2563eb" maxlength="7" style="flex:1">
                             <button type="button" class="btn btn-outline btn-sm"
-                                    onclick="resetColor('accent_color','accent_picker','#2563eb')">Default</button>
+                                    data-reset-text="accent_color" data-reset-picker="accent_picker" data-reset-default="#2563eb">Default</button>
                         </div>
                         <p class="hint">Used for buttons, active links, and highlights across the site.</p>
                     </div>
@@ -624,13 +618,12 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
                     <img src="<?= htmlspecialchars($banner_path) ?>?v=<?= time() ?>"
                          alt="Current banner" style="max-height:40px;max-width:100%;display:block">
                 </div>
-                <form method="post" action="/admin_settings.php" style="margin-bottom:1rem">
+                <form method="post" action="/admin_settings.php" style="margin-bottom:1rem" data-confirm="Remove the banner?">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
                     <input type="hidden" name="action" value="banner_remove">
                     <input type="hidden" name="tab" value="appearance">
                     <button type="submit" class="btn btn-outline"
-                            style="color:#ef4444;border-color:#fca5a5;font-size:.82rem"
-                            onclick="return confirm('Remove the banner?')">&#x2715; Remove Banner</button>
+                            style="color:#ef4444;border-color:#fca5a5;font-size:.82rem">&#x2715; Remove Banner</button>
                 </form>
                 <?php endif; ?>
                 <form method="post" action="/admin_settings.php" enctype="multipart/form-data">
@@ -675,7 +668,7 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
                 All user activity &mdash; <?= number_format($log_total) ?> total entries.
             </p>
             <form method="post" action="/admin_settings.php"
-                  onsubmit="return confirm('Clear all log entries? This cannot be undone.')">
+                  data-confirm="Clear all log entries? This cannot be undone.">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
                 <input type="hidden" name="action" value="clear_logs">
                 <input type="hidden" name="tab" value="logs">
@@ -743,19 +736,19 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:1rem">
             <span style="color:#64748b;font-size:.875rem"><?= count($users) ?> user<?= count($users) !== 1 ? 's' : '' ?></span>
-            <button class="btn btn-primary" onclick="openUserModal()">+ New User</button>
+            <button class="btn btn-primary" data-action="open-user-modal">+ New User</button>
         </div>
 
         <div id="bulkBar">
             <span class="bulk-label"><span id="bulkCount">0</span> selected</span>
             <form id="bulkForm" method="post" action="/admin_settings.php"
-                  onsubmit="return confirm('Delete selected users? This cannot be undone.')">
+                  data-confirm="Delete selected users? This cannot be undone.">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
                 <input type="hidden" name="action" value="bulk_delete">
                 <input type="hidden" name="tab" value="users">
                 <button type="submit" class="btn btn-sm" style="background:#ef4444;color:#fff">Delete Selected</button>
             </form>
-            <button class="btn btn-sm btn-outline" onclick="clearSelection()">Clear</button>
+            <button class="btn btn-sm btn-outline" data-action="clear-user-sel">Clear</button>
         </div>
 
         <div class="table-card">
@@ -792,7 +785,7 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
                                    class="btn-icon" title="Edit">&#9881;</a>
                                 <?php if ((int)$u['id'] !== (int)$current['id']): ?>
                                 <form method="post" action="/admin_settings.php"
-                                      onsubmit="return confirm('Delete ' + <?= json_encode($u['username'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?> + '?')">
+                                      data-confirm="Delete <?= htmlspecialchars($u['username']) ?>?">
                                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="tab" value="users">
@@ -907,7 +900,7 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
                     <input type="hidden" name="tab" value="email">
                     <div class="form-group">
                         <label>To</label>
-                        <select name="compose_to" class="form-select" onchange="document.getElementById('customToWrap').style.display=this.value==='custom'?'':'none'">
+                        <select name="compose_to" id="composeTo" class="form-select">
                             <option value="all">All users (with email)</option>
                             <?php foreach ($users as $u): if (!$u['email']) continue; ?>
                                 <option value="<?= (int)$u['id'] ?>"><?= htmlspecialchars($u['username']) ?> &lt;<?= htmlspecialchars($u['email']) ?>&gt;</option>
@@ -937,11 +930,11 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
 </div>
 
 <!-- ── New User Modal ── -->
-<div class="modal-overlay" id="newUserModal" onclick="overlayClick(event)">
+<div class="modal-overlay" id="newUserModal">
     <div class="modal">
         <div class="modal-header">
             <h2>New User</h2>
-            <button class="modal-close" onclick="closeUserModal()" title="Close">&#x2715;</button>
+            <button class="modal-close" data-action="close-user-modal" title="Close">&#x2715;</button>
         </div>
         <form method="post" action="/admin_settings.php">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
@@ -968,7 +961,7 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
             </div>
             <div style="display:flex;gap:.75rem;margin-top:1.5rem">
                 <button type="submit" class="btn btn-primary" style="flex:1">Create User</button>
-                <button type="button" class="btn btn-outline" onclick="closeUserModal()">Cancel</button>
+                <button type="button" class="btn btn-outline" data-action="close-user-modal">Cancel</button>
             </div>
         </form>
     </div>
@@ -976,7 +969,7 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
 
 <footer>&copy; <?= (new DateTime('now', new DateTimeZone(get_setting('timezone', 'UTC'))))->format('Y') ?> <?= htmlspecialchars($site_name) ?> v<?= htmlspecialchars(APP_VERSION) ?> &nbsp;&mdash;&nbsp; <?= (new DateTime('now', new DateTimeZone(get_setting('timezone', 'UTC'))))->format('F j, Y g:i A') ?></footer>
 
-<script>
+<script nonce="<?= csp_nonce() ?>">
 function openUserModal() {
     document.getElementById('newUserModal').classList.add('open');
     document.getElementById('m_username').focus();
@@ -1044,6 +1037,28 @@ function updatePreview() {
     if (brand)    brand.style.color    = /^#[0-9a-fA-F]{6}$/.test(text) ? text : '#ffffff';
     if (accentEl) accentEl.style.color = /^#[0-9a-fA-F]{6}$/.test(acc)  ? acc  : '#2563eb';
 }
+
+// ── CSP-safe handler wiring (replaces inline on* attributes) ───────────────────
+document.querySelectorAll('[data-action="open-user-modal"]').forEach(b => b.addEventListener('click', openUserModal));
+document.querySelectorAll('[data-action="close-user-modal"]').forEach(b => b.addEventListener('click', closeUserModal));
+document.querySelectorAll('[data-action="clear-user-sel"]').forEach(b => b.addEventListener('click', clearSelection));
+document.getElementById('newUserModal')?.addEventListener('click', overlayClick);
+document.getElementById('composeTo')?.addEventListener('change', function () {
+    document.getElementById('customToWrap').style.display = this.value === 'custom' ? '' : 'none';
+});
+function bindColor(pickerId, textId) {
+    var p = document.getElementById(pickerId), t = document.getElementById(textId);
+    if (p) p.addEventListener('input', function () { syncText(textId, p.value); updatePreview(); });
+    if (t) t.addEventListener('input', function () { syncPicker(pickerId, t.value); updatePreview(); });
+}
+bindColor('nav_bg_picker', 'nav_bg_color');
+bindColor('nav_text_picker', 'nav_text_color');
+bindColor('accent_picker', 'accent_color');
+document.querySelectorAll('[data-reset-text]').forEach(function (b) {
+    b.addEventListener('click', function () {
+        resetColor(b.dataset.resetText, b.dataset.resetPicker, b.dataset.resetDefault);
+    });
+});
 </script>
 </body>
 </html>

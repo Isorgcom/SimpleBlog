@@ -1,5 +1,5 @@
-<?php /* Shared <head> partial: theme bootstrap (avoids FOUC) + nav.js. Pages should require this between <head> tags after their <link rel="stylesheet"> */ ?>
-<script>
+<?php /* Shared <head> partial: theme bootstrap (avoids FOUC). toggleTheme() lives in nav.js. Pages require this between <head> tags after their <link rel="stylesheet"> */ ?>
+<script nonce="<?= csp_nonce() ?>">
 (function(){
   try {
     var t = localStorage.getItem('theme');
@@ -7,10 +7,4 @@
     document.documentElement.setAttribute('data-theme', t);
   } catch(_) {}
 })();
-function toggleTheme(){
-  var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-  var next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  try { localStorage.setItem('theme', next); } catch(_) {}
-}
 </script>

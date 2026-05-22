@@ -298,7 +298,7 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:1rem">
         <h1 style="font-size:1.5rem">Manage Posts</h1>
-        <button class="btn btn-primary" onclick="openModal()">&#43; New Post</button>
+        <button class="btn btn-primary" data-action="open-post-modal">&#43; New Post</button>
     </div>
 
     <?php if ($flash['msg']): ?>
@@ -330,8 +330,8 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
         <!-- Bulk action bar (shown when rows selected) -->
         <div class="bulk-bar" id="bulk-bar">
             <span class="bulk-count" id="bulk-count-label">0 selected</span>
-            <button class="btn-sm-text danger" onclick="bulkDelete()">Delete selected</button>
-            <button class="btn-sm-text" onclick="clearSel()">Clear</button>
+            <button class="btn-sm-text danger" data-action="bulk-delete-posts">Delete selected</button>
+            <button class="btn-sm-text" data-action="clear-post-sel">Clear</button>
         </div>
 
         <table>
@@ -352,7 +352,7 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
                 <tr data-title="<?= htmlspecialchars(mb_strtolower($p['title'])) ?>"
                     class="<?= $p['hidden'] ? 'post-hidden' : '' ?>">
                     <td class="col-cb">
-                        <input type="checkbox" class="row-cb post-cb" value="<?= (int)$p['id'] ?>" onchange="onCbChange()">
+                        <input type="checkbox" class="row-cb post-cb" value="<?= (int)$p['id'] ?>">
                     </td>
                     <td><?= (int)$p['id'] ?></td>
                     <td>
@@ -391,7 +391,7 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
                                 </button>
                             </form>
                             <form method="post" action="/admin_posts.php" style="margin:0"
-                                  onsubmit="return confirm('Delete this post?')">
+                                  data-confirm="Delete this post?">
                                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= (int)$p['id'] ?>">
@@ -413,7 +413,7 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
     <div class="modal">
         <div class="modal-header">
             <h2 id="modalTitle">New Post</h2>
-            <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+            <button class="modal-close" data-action="close-post-modal">&#x2715;</button>
         </div>
         <form method="post" action="/admin_posts.php" id="postForm">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
@@ -446,7 +446,7 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
             </div>
             <div style="display:flex;gap:.75rem;margin-top:1rem">
                 <button type="submit" class="btn btn-primary" style="flex:1" id="submitBtn">Publish</button>
-                <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn btn-outline" data-action="close-post-modal">Cancel</button>
             </div>
         </form>
     </div>
@@ -455,7 +455,7 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
 <footer>&copy; <?= (new DateTime('now', new DateTimeZone(get_setting('timezone', 'UTC'))))->format('Y') ?> <?= htmlspecialchars($site_name) ?> v<?= htmlspecialchars(APP_VERSION) ?> &nbsp;&mdash;&nbsp; <?= (new DateTime('now', new DateTimeZone(get_setting('timezone', 'UTC'))))->format('F j, Y g:i A') ?></footer>
 
 <script src="/vendor/jodit/jodit.min.js"></script>
-<script>
+<script nonce="<?= csp_nonce() ?>">
 const csrfToken = <?= json_encode($token, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
 // ── Jodit setup ───────────────────────────────────────────────────────────────
@@ -632,6 +632,13 @@ function bulkDelete() {
     document.getElementById('bulk-ids').value = JSON.stringify(ids);
     document.getElementById('bulk-form').submit();
 }
+
+// CSP-safe handler wiring (replaces inline on* attributes)
+document.querySelectorAll('[data-action="open-post-modal"]').forEach(b => b.addEventListener('click', () => openModal()));
+document.querySelectorAll('[data-action="close-post-modal"]').forEach(b => b.addEventListener('click', () => closeModal()));
+document.querySelector('[data-action="bulk-delete-posts"]')?.addEventListener('click', bulkDelete);
+document.querySelector('[data-action="clear-post-sel"]')?.addEventListener('click', clearSel);
+document.querySelectorAll('.post-cb').forEach(cb => cb.addEventListener('change', onCbChange));
 
 <?php if ($edit_post): ?>
 openModal(

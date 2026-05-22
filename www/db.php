@@ -98,12 +98,19 @@ function db_init(PDO $pdo): void {
 
     $count = $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
     if ((int)$count === 0) {
-        $hash = password_hash('admin', PASSWORD_BCRYPT);
+        // Use a random initial password (not a well-known default) so a fresh
+        // deployment can't be claimed by whoever reaches it first with admin/admin.
+        // It's written to the error log (visible via `docker logs`) and must be
+        // changed on first login (must_change_password = 1).
+        $initial_password = bin2hex(random_bytes(9)); // 18-char hex
+        $hash = password_hash($initial_password, PASSWORD_BCRYPT);
         $stmt = $pdo->prepare(
             "INSERT INTO users (username, password_hash, email, role, must_change_password, email_verified)
              VALUES (?, ?, ?, 'admin', 1, 1)"
         );
         $stmt->execute(['admin', $hash, 'admin@localhost']);
+        error_log("SimpleBlog: created initial admin account — username 'admin', "
+                . "temporary password '$initial_password' — change it immediately on first login.");
     }
 }
 
@@ -140,16 +147,24 @@ function get_site_url(): string {
 }
 
 function get_client_ip(): string {
-    // X-Real-IP is set by the nginx reverse proxy
-    if (!empty($_SERVER['HTTP_X_REAL_IP'])
-        && filter_var($_SERVER['HTTP_X_REAL_IP'], FILTER_VALIDATE_IP)
-    ) {
-        return $_SERVER['HTTP_X_REAL_IP'];
-    }
-    // Fallback: first IP in X-Forwarded-For
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $ip = trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
-        if (filter_var($ip, FILTER_VALIDATE_IP)) return $ip;
+    // Proxy-supplied client-IP headers (X-Real-IP / X-Forwarded-For) are only
+    // trustworthy when the app sits behind a reverse proxy that overwrites them.
+    // If the container is directly reachable, a client can spoof these to evade
+    // IP-based rate limiting or forge audit-log IPs — so honoring them is gated
+    // behind TRUST_PROXY_HEADERS (define it false in config.php for direct exposure).
+    $trust_proxy = !defined('TRUST_PROXY_HEADERS') || TRUST_PROXY_HEADERS;
+    if ($trust_proxy) {
+        // X-Real-IP is set by the reverse proxy
+        if (!empty($_SERVER['HTTP_X_REAL_IP'])
+            && filter_var($_SERVER['HTTP_X_REAL_IP'], FILTER_VALIDATE_IP)
+        ) {
+            return $_SERVER['HTTP_X_REAL_IP'];
+        }
+        // Fallback: first IP in X-Forwarded-For
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ip = trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) return $ip;
+        }
     }
     return $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 }
@@ -221,17 +236,16 @@ function sanitize_html(string $html): string {
                     $safe   = in_array($scheme, $safe_schemes, true)
                            || str_starts_with($val, '/')
                            || str_starts_with($val, '#')
-                           || str_starts_with($val, 'data:image/');
+                           // Allow only raster data: images — data:image/svg+xml
+                           // can carry script and must not be permitted.
+                           || (bool)preg_match('#^data:image/(png|jpe?g|gif|webp)[;,]#i', $val);
                     if (!$safe) $drop_attrs[] = $name;
                 }
-                // Strip dangerous CSS in style attribute
+                // Allowlist CSS properties in the style attribute (blocklists leak)
                 if ($name === 'style') {
-                    $style = preg_replace(
-                        '/expression\s*\(|javascript\s*:|behavior\s*:|vbscript\s*:|-moz-binding/i',
-                        '',
-                        $attr->value
-                    );
-                    $child->setAttribute('style', $style);
+                    $clean = sanitize_css($attr->value);
+                    if ($clean === '') $drop_attrs[] = $name;
+                    else $child->setAttribute('style', $clean);
                 }
                 // Force external links to open safely
                 if ($name === 'target') {
@@ -266,6 +280,37 @@ function sanitize_html(string $html): string {
         $out .= $doc->saveHTML($child);
     }
     return $out;
+}
+
+/**
+ * Allowlist-based sanitizer for inline style="" values. Keeps a small set of
+ * formatting-only properties (the kind the WYSIWYG editor emits) and drops any
+ * declaration whose value contains url(), expression(), @import, a script
+ * scheme, or angle brackets. Blocklists on CSS are leaky; this is allowlist-first.
+ */
+function sanitize_css(string $css): string {
+    static $allowed = [
+        'color', 'background-color',
+        'text-align', 'text-decoration', 'text-indent', 'text-transform',
+        'font-size', 'font-weight', 'font-style', 'font-family', 'font-variant',
+        'line-height', 'letter-spacing',
+        'margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom',
+        'padding', 'padding-left', 'padding-right', 'padding-top', 'padding-bottom',
+        'width', 'height', 'max-width', 'min-width',
+        'border', 'border-color', 'border-width', 'border-style', 'border-radius',
+        'vertical-align', 'white-space', 'list-style-type', 'float', 'clear',
+    ];
+    $out = [];
+    foreach (explode(';', $css) as $decl) {
+        if (strpos($decl, ':') === false) continue;
+        [$prop, $val] = explode(':', $decl, 2);
+        $prop = strtolower(trim($prop));
+        $val  = trim($val);
+        if ($val === '' || !in_array($prop, $allowed, true)) continue;
+        if (preg_match('#url\s*\(|expression\s*\(|javascript\s*:|vbscript\s*:|behavior\s*:|-moz-binding|@import|[<>]#i', $val)) continue;
+        $out[] = $prop . ': ' . $val;
+    }
+    return implode('; ', $out);
 }
 
 function db_log_activity(int $user_id, string $action): void {

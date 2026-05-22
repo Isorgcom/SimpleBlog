@@ -92,7 +92,7 @@ $tlMonths = $tlStmt->fetchAll();
                 <?php if ($isAdmin): ?>
                 <div class="post-actions">
                     <a href="/admin_posts.php?edit=<?= (int)$post['id'] ?>" class="btn btn-ghost btn-sm">Edit</a>
-                    <form method="post" action="/admin_posts.php" style="margin:0" onsubmit="return confirm('Delete this post?')">
+                    <form method="post" action="/admin_posts.php" style="margin:0" data-confirm="Delete this post?">
                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="id" value="<?= (int)$post['id'] ?>">
@@ -105,7 +105,7 @@ $tlMonths = $tlStmt->fetchAll();
             <div class="post-body"><?= sanitize_html($post['content']) ?></div>
 
             <div class="comments-section" id="csec-<?= (int)$post['id'] ?>">
-                <button type="button" class="comments-heading" onclick="toggleComments(<?= (int)$post['id'] ?>)">
+                <button type="button" class="comments-heading" data-post="<?= (int)$post['id'] ?>">
                     <span class="cmts-chevron">▶</span>
                     <?= count($comments) ?> Comment<?= count($comments) !== 1 ? 's' : '' ?>
                 </button>
@@ -115,21 +115,21 @@ $tlMonths = $tlStmt->fetchAll();
                         <span id="bulkcount-<?= (int)$post['id'] ?>">0 selected</span>
                         <span class="grow"></span>
                         <form method="post" action="/comment.php" style="margin:0;display:contents"
-                              onsubmit="return prepareBulkDelete(<?= (int)$post['id'] ?>, this)">
+                              data-bulk-delete data-post="<?= (int)$post['id'] ?>">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
                             <input type="hidden" name="action" value="bulk_delete">
                             <input type="hidden" name="comment_ids" value="">
                             <input type="hidden" name="redirect" value="<?= htmlspecialchars($redir) ?>">
                             <button type="submit" class="btn btn-danger btn-sm">Delete selected</button>
                         </form>
-                        <button type="button" class="btn btn-ghost btn-sm" onclick="clearSel(<?= (int)$post['id'] ?>)">Cancel</button>
+                        <button type="button" class="btn btn-ghost btn-sm" data-clear-sel data-post="<?= (int)$post['id'] ?>">Cancel</button>
                     </div>
                     <?php endif; ?>
 
                     <?php foreach ($comments as $c): ?>
                     <div class="comment" id="cmt-<?= (int)$c['id'] ?>">
                         <?php if ($isAdmin): ?>
-                        <input type="checkbox" class="comment-sel" value="<?= (int)$c['id'] ?>" onchange="onSelChange(<?= (int)$post['id'] ?>)">
+                        <input type="checkbox" class="comment-sel" value="<?= (int)$c['id'] ?>" data-post="<?= (int)$post['id'] ?>">
                         <?php endif; ?>
                         <div class="avatar"><?= htmlspecialchars(strtoupper(mb_substr($c['username'], 0, 1))) ?></div>
                         <div class="body">
@@ -140,8 +140,8 @@ $tlMonths = $tlStmt->fetchAll();
                             <div class="text" id="cbody-<?= (int)$c['id'] ?>"><?= htmlspecialchars($c['body']) ?></div>
                             <?php if ($user && ($user['id'] == $c['user_id'] || $isAdmin)): ?>
                             <div class="actions">
-                                <button type="button" onclick="editComment(<?= (int)$c['id'] ?>, this)">Edit</button>
-                                <form method="post" action="/comment.php" style="margin:0;display:contents" onsubmit="return confirm('Delete this comment?')">
+                                <button type="button" data-edit-comment="<?= (int)$c['id'] ?>">Edit</button>
+                                <form method="post" action="/comment.php" style="margin:0;display:contents" data-confirm="Delete this comment?">
                                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="comment_id" value="<?= (int)$c['id'] ?>">
@@ -204,7 +204,7 @@ $tlMonths = $tlStmt->fetchAll();
 
 </main>
 
-<script>
+<script nonce="<?= csp_nonce() ?>">
 (function () {
     const sentinel = document.getElementById('posts-sentinel');
     const loading  = document.getElementById('posts-loading');
@@ -249,7 +249,7 @@ $tlMonths = $tlStmt->fetchAll();
 </script>
 
 <?php if ($user): ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
 const _csrf = <?= json_encode($csrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
 function toggleComments(postId) {
@@ -275,7 +275,7 @@ function editComment(id, btn) {
       orig.replace(/</g, '&lt;') + '</textarea>' +
       '<div style="display:flex;gap:.5rem;margin-top:.5rem">' +
         '<button type="submit" class="btn btn-primary btn-sm">Save</button>' +
-        '<button type="button" class="btn btn-ghost btn-sm" onclick="cancelEdit(' + id + ')">Cancel</button>' +
+        '<button type="button" class="btn btn-ghost btn-sm" data-cancel-edit="' + id + '">Cancel</button>' +
       '</div>';
     bodyEl.appendChild(form);
     form.querySelector('textarea').focus();
@@ -308,6 +308,22 @@ function prepareBulkDelete(postId, form) {
     form.querySelector('[name="comment_ids"]').value = JSON.stringify(ids);
     return true;
 }
+
+// CSP-safe event delegation on document — also catches infinite-scroll chunks.
+document.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('.comments-heading')))        { toggleComments(+t.dataset.post); }
+    else if ((t = e.target.closest('[data-clear-sel]')))    { clearSel(+t.dataset.post); }
+    else if ((t = e.target.closest('[data-edit-comment]'))) { editComment(+t.dataset.editComment, t); }
+    else if ((t = e.target.closest('[data-cancel-edit]')))  { cancelEdit(+t.dataset.cancelEdit); }
+});
+document.addEventListener('change', function (e) {
+    if (e.target.matches('.comment-sel')) onSelChange(+e.target.dataset.post);
+});
+document.addEventListener('submit', function (e) {
+    var f = e.target.closest('[data-bulk-delete]');
+    if (f && !prepareBulkDelete(+f.dataset.post, f)) e.preventDefault();
+});
 </script>
 <?php endif; ?>
 

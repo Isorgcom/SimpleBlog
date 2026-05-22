@@ -64,7 +64,7 @@ foreach ($posts as $idx => $post):
         <?php if ($isAdmin): ?>
         <div class="post-actions">
             <a href="/admin_posts.php?edit=<?= (int)$post['id'] ?>" class="btn btn-ghost btn-sm">Edit</a>
-            <form method="post" action="/admin_posts.php" style="margin:0" onsubmit="return confirm('Delete this post?')">
+            <form method="post" action="/admin_posts.php" style="margin:0" data-confirm="Delete this post?">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="id" value="<?= (int)$post['id'] ?>">
@@ -77,7 +77,7 @@ foreach ($posts as $idx => $post):
     <div class="post-body"><?= sanitize_html($post['content']) ?></div>
 
     <div class="comments-section" id="csec-<?= (int)$post['id'] ?>">
-        <button type="button" class="comments-heading" onclick="toggleComments(<?= (int)$post['id'] ?>)">
+        <button type="button" class="comments-heading" data-post="<?= (int)$post['id'] ?>">
             <span class="cmts-chevron">▶</span>
             <?= count($comments) ?> Comment<?= count($comments) !== 1 ? 's' : '' ?>
         </button>
@@ -87,21 +87,21 @@ foreach ($posts as $idx => $post):
                 <span id="bulkcount-<?= (int)$post['id'] ?>">0 selected</span>
                 <span class="grow"></span>
                 <form method="post" action="/comment.php" style="margin:0;display:contents"
-                      onsubmit="return prepareBulkDelete(<?= (int)$post['id'] ?>, this)">
+                      data-bulk-delete data-post="<?= (int)$post['id'] ?>">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
                     <input type="hidden" name="action" value="bulk_delete">
                     <input type="hidden" name="comment_ids" value="">
                     <input type="hidden" name="redirect" value="<?= htmlspecialchars($redir) ?>">
                     <button type="submit" class="btn btn-danger btn-sm">Delete selected</button>
                 </form>
-                <button type="button" class="btn btn-ghost btn-sm" onclick="clearSel(<?= (int)$post['id'] ?>)">Cancel</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-clear-sel data-post="<?= (int)$post['id'] ?>">Cancel</button>
             </div>
             <?php endif; ?>
 
             <?php foreach ($comments as $c): ?>
             <div class="comment" id="cmt-<?= (int)$c['id'] ?>">
                 <?php if ($isAdmin): ?>
-                <input type="checkbox" class="comment-sel" value="<?= (int)$c['id'] ?>" onchange="onSelChange(<?= (int)$post['id'] ?>)">
+                <input type="checkbox" class="comment-sel" value="<?= (int)$c['id'] ?>" data-post="<?= (int)$post['id'] ?>">
                 <?php endif; ?>
                 <div class="avatar"><?= htmlspecialchars(strtoupper(mb_substr($c['username'], 0, 1))) ?></div>
                 <div class="body">
@@ -112,8 +112,8 @@ foreach ($posts as $idx => $post):
                     <div class="text" id="cbody-<?= (int)$c['id'] ?>"><?= htmlspecialchars($c['body']) ?></div>
                     <?php if ($user && ($user['id'] == $c['user_id'] || $isAdmin)): ?>
                     <div class="actions">
-                        <button type="button" onclick="editComment(<?= (int)$c['id'] ?>, this)">Edit</button>
-                        <form method="post" action="/comment.php" style="margin:0;display:contents" onsubmit="return confirm('Delete this comment?')">
+                        <button type="button" data-edit-comment="<?= (int)$c['id'] ?>">Edit</button>
+                        <form method="post" action="/comment.php" style="margin:0;display:contents" data-confirm="Delete this comment?">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf) ?>">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="comment_id" value="<?= (int)$c['id'] ?>">

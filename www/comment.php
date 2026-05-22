@@ -9,9 +9,11 @@ if (!$user) {
     exit;
 }
 
-// Validate redirect — only allow relative paths
+// Validate redirect — only allow same-site relative paths.
+// Must start with a single "/" that is NOT followed by "/" or "\", otherwise
+// "//evil.com" / "/\evil.com" become protocol-relative open redirects.
 $redirect = $_POST['redirect'] ?? '/';
-if (!preg_match('#^/[^/\\\\]*#', $redirect)) $redirect = '/';
+if (!preg_match('#^/($|[^/\\\\])#', $redirect)) $redirect = '/';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrf_verify()) {
     header('Location: ' . $redirect);

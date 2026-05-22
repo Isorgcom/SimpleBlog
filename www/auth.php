@@ -8,13 +8,26 @@ function is_https(): bool {
     return strtolower($xfp) === 'https';
 }
 
+/**
+ * Per-request CSP nonce. Inline <script> blocks must carry nonce="<?= csp_nonce() ?>"
+ * to execute, since the CSP no longer allows 'unsafe-inline' for scripts.
+ * (style-src keeps 'unsafe-inline' — inline styles are pervasive and far lower risk.)
+ */
+function csp_nonce(): string {
+    static $nonce = null;
+    if ($nonce === null) {
+        $nonce = base64_encode(random_bytes(16));
+    }
+    return $nonce;
+}
+
 // ── Security headers (sent on every request) ──────────────────────────────────
 header_remove('X-Powered-By');
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'");
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-" . csp_nonce() . "'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'");
 if (is_https()) {
     header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 }
@@ -62,7 +75,13 @@ function attempt_login(string $username, string $password): bool {
     $stmt->execute([strtolower(trim($username))]);
     $row = $stmt->fetch();
 
-    if (!$row || !password_verify($password, $row['password_hash'])) return false;
+    if (!$row) {
+        // Verify against a fixed valid hash so the no-such-user path costs the
+        // same as the wrong-password path (reduces username enumeration by timing).
+        password_verify($password, '$2y$12$7TIkvZ9kZrClBkJphjLadusC5XZU49J59QBXvdAuMEltp/EgG3YYK');
+        return false;
+    }
+    if (!password_verify($password, $row['password_hash'])) return false;
 
     require_once __DIR__ . '/mail.php';
     if ((int)$row['email_verified'] === 0 && smtp_configured()) {
