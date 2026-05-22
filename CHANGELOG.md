@@ -3,6 +3,47 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.2.2] — 2026-05-22 — Security sweep
+
+Full security review of the now-standalone codebase. Hardening only, no
+functional changes. All inline JavaScript was removed so the Content-
+Security-Policy no longer permits `'unsafe-inline'` for scripts.
+
+### Fixed
+- **Open redirect** in `comment.php` — the redirect validator accepted
+  `//host` and `/\host` (protocol-relative URLs), allowing off-site
+  redirects. Only genuine same-site paths now pass. [low]
+
+### Changed
+- **CSP `script-src`** — dropped `'unsafe-inline'`; inline `<script>` blocks
+  now carry a per-request nonce (`csp_nonce()` in `auth.php`). All 38 inline
+  `on*` handlers converted to `addEventListener` / event delegation; global
+  behaviors (theme toggle, user menu, confirm dialogs) moved to `nav.js` via
+  `data-action` / `data-confirm`. `style-src` keeps `'unsafe-inline'`
+  deliberately (inline styles are pervasive, far lower risk). [medium]
+- **Seeded admin** — fresh installs get a random initial password (written to
+  the error log / `docker logs`) instead of `admin`/`admin`, closing the
+  first-login takeover race. Still `must_change_password=1`. [low]
+- **`sanitize_html()`** — the inline `style` attribute is now filtered through
+  a CSS-property allowlist (previously a regex blocklist), and
+  `data:image/svg+xml` is no longer allowed in `src`/`href`. [low]
+- **Login timing** — a dummy bcrypt verify now runs when the username does not
+  exist, equalizing response time to reduce username enumeration. [low]
+
+### Added
+- **`TRUST_PROXY_HEADERS`** config constant (documented in
+  `config.example.php`) — gates trust of `X-Real-IP` / `X-Forwarded-For` so a
+  directly-exposed instance can't be fed spoofed client IPs to evade rate
+  limits or forge audit-log entries. Defaults to `true` (proxy deployment). [low]
+
+### Notes
+- Verified on the dev image: CSP header nonce matches every inline script, no
+  `unsafe-inline` in `script-src`, zero inline `on*` handlers, admin pages load
+  when authenticated. Prepared statements, CSRF, upload validation, and the
+  secret/DB git-ignore status were reviewed and found solid.
+- SimpleBlog is now an independent project; changes are no longer back-ported
+  to or from GameNight.
+
 ## [0.2.1] — 2026-05-15 — Desktop framework polish
 
 Iteration on v0.2.0 after the editorial-reader layout felt too austere
