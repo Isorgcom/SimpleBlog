@@ -136,6 +136,62 @@ function set_setting(string $key, string $value): void {
         ->execute([$key, $value]);
 }
 
+/**
+ * Fetch the latest published APP_VERSION from the public GitHub repo.
+ * Returns the version string (e.g. "0.3.1") or null on any failure —
+ * no exceptions escape, so callers can treat null as "couldn't check".
+ */
+function fetch_remote_version(): ?string {
+    if (!defined('UPDATE_SOURCE_URL') || UPDATE_SOURCE_URL === '') return null;
+    $ch = curl_init(UPDATE_SOURCE_URL);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 4,
+        CURLOPT_USERAGENT      => 'SimpleBlog-update-check',
+    ]);
+    $body = curl_exec($ch);
+    $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    if ($body === false || $code !== 200) return null;
+    if (!preg_match("/define\\(\\s*'APP_VERSION'\\s*,\\s*'([^']+)'\\s*\\)/", $body, $m)) return null;
+    $v = trim($m[1]);
+    return $v !== '' ? $v : null;
+}
+
+/**
+ * Refresh the cached latest_version from GitHub, at most once per 24h
+ * (pass $force = true to bypass the gate, e.g. an admin "Check now").
+ * On a failed fetch the previously cached value is left untouched, so a
+ * GitHub blip never clears a known-good value.
+ *
+ * Returns true if a version was successfully fetched this call. With
+ * $force = true a false return means the fetch failed; without $force a
+ * false return may also mean the 24h gate skipped the check.
+ */
+function run_update_check(bool $force = false): bool {
+    if (!$force) {
+        $last = (int)get_setting('latest_version_checked_at', '0');
+        if (time() - $last < 86400) return false;
+    }
+    $remote = fetch_remote_version();
+    // Always record that we attempted a check; only overwrite the version on success.
+    set_setting('latest_version_checked_at', (string)time());
+    if ($remote !== null) {
+        set_setting('latest_version', $remote);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * True iff a successfully-fetched latest_version is strictly newer than the
+ * running APP_VERSION. Cheap (cached settings read) — safe to call per-request.
+ */
+function update_available(): bool {
+    $latest = get_setting('latest_version', '');
+    if ($latest === '') return false;
+    return version_compare(APP_VERSION, $latest, '<');
+}
+
 function get_site_url(): string {
     $url = get_setting('site_url', '');
     if ($url !== '') return rtrim($url, '/');

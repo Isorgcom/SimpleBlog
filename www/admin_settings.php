@@ -106,6 +106,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $post_tab = 'logs';
         }
 
+        // ── Check GitHub for a newer version now (admin "Check now") ──
+        if ($action === 'check_update') {
+            if (run_update_check(true)) {
+                $_SESSION['flash'] = update_available()
+                    ? ['type' => 'success', 'msg' => 'Update available: v' . get_setting('latest_version') . ' — you are running v' . APP_VERSION . '.']
+                    : ['type' => 'success', 'msg' => 'You are running the latest version (v' . APP_VERSION . ').'];
+            } else {
+                $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Could not reach the update server. Please try again later.'];
+            }
+            $post_tab = 'dashboard';
+        }
+
         if ($action === 'add') {
             $username = strtolower(trim($_POST['username'] ?? ''));
             $email    = trim($_POST['email'] ?? '');
@@ -332,6 +344,13 @@ $dash_users  = (int)$db->query('SELECT COUNT(*) FROM users')->fetchColumn();
 $dash_logins = (int)$db->query("SELECT COUNT(*) FROM activity_log WHERE action = 'login'")->fetchColumn();
 $dash_events = (int)$db->query('SELECT COUNT(*) FROM activity_log')->fetchColumn();
 $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
+
+// Lazy "update available" check — dashboard view only, gated to once/24h inside
+// run_update_check(). Worst case: one dashboard load per day blocks ~4s on the
+// GitHub fetch (short timeout, fails silently). All other tabs/pages stay instant.
+if ($tab === 'dashboard') {
+    run_update_check();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -490,6 +509,18 @@ $dash_posts  = (int)$db->query('SELECT COUNT(*) FROM posts')->fetchColumn();
             <div class="stat-card">
                 <div class="label">Version</div>
                 <div class="value" style="font-size:1.1rem">v<?= htmlspecialchars(APP_VERSION) ?></div>
+                <?php if (update_available()): ?>
+                <div style="margin-top:.35rem;font-size:.78rem;color:#92400e">
+                    Update available: v<?= htmlspecialchars(get_setting('latest_version')) ?>
+                    &middot; <a href="<?= htmlspecialchars(CHANGELOG_URL) ?>" target="_blank" rel="noopener">changelog</a>
+                </div>
+                <?php endif; ?>
+                <form method="post" action="/admin_settings.php?tab=dashboard" style="margin-top:.4rem">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
+                    <input type="hidden" name="tab" value="dashboard">
+                    <input type="hidden" name="action" value="check_update">
+                    <button type="submit" class="btn btn-outline" style="padding:.15rem .6rem;font-size:.72rem">Check now</button>
+                </form>
             </div>
         </div>
 

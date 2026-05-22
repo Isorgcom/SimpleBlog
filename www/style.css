@@ -178,6 +178,17 @@ nav {
 }
 .nav-links a:hover { background: var(--bg-soft); color: var(--text); text-decoration: none; }
 .nav-links a.active { color: var(--text); background: var(--bg-soft); }
+/* "Update available" indicator on the admin Settings link */
+.nav-update-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f59e0b;
+    margin-left: .35rem;
+    vertical-align: middle;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, .25);
+}
 @media (max-width: 720px) {
     .nav-links { display: none; }
 }

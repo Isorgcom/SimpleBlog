@@ -3,6 +3,21 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.3.0] — 2026-05-22 — Update notifications
+
+### Added
+- **Version upgrade notification.** Admins are now told when a newer
+  SimpleBlog release is published. The app fetches `APP_VERSION` from the
+  public repo's `main` branch (`UPDATE_SOURCE_URL` in `version.php`), caches
+  it in `site_settings`, and compares it to the running version.
+  - An amber dot appears on the **Settings** nav link (admins only) when an
+    update is available.
+  - The dashboard shows an "Update available: vX.Y.Z" line with a changelog
+    link, plus a **Check now** button to force an immediate check.
+  - The check runs lazily on a dashboard view, gated to once per 24h
+    (`run_update_check()` in `db.php`), with a 4s timeout that fails silently
+    so a network blip never blocks the page or clears a known-good value.
+
 ## [0.2.2] — 2026-05-22 — Security sweep
 
 Full security review of the now-standalone codebase. Hardening only, no

@@ -12,6 +12,9 @@ $_banner   = get_setting('banner_path', '');
 $_nav_bg   = get_setting('nav_bg_color', '');
 $_nav_text = get_setting('nav_text_color', '');
 $_accent   = get_setting('accent_color', '');
+// Admin-only "update available" dot on the Settings link.
+$_show_update_dot = ($_nu && ($_nu['role'] ?? '') === 'admin'
+                     && function_exists('update_available') && update_available());
 ?>
 <?php if ($_nav_bg || $_nav_text || $_accent): ?>
 <style>
@@ -33,7 +36,7 @@ $_accent   = get_setting('accent_color', '');
             <a href="/"<?= $_active === 'home' ? ' class="active"' : '' ?>>Home</a>
             <?php if ($_nu && $_nu['role'] === 'admin'): ?>
                 <a href="/admin_posts.php"<?= $_active === 'posts' ? ' class="active"' : '' ?>>Posts</a>
-                <a href="/admin_settings.php"<?= $_active === 'site-settings' ? ' class="active"' : '' ?>>Settings</a>
+                <a href="/admin_settings.php"<?= $_active === 'site-settings' ? ' class="active"' : '' ?>>Settings<?php if ($_show_update_dot): ?> <span class="nav-update-dot" title="Update available: v<?= htmlspecialchars(get_setting('latest_version')) ?>"></span><?php endif; ?></a>
             <?php endif; ?>
         </div>
         <div class="nav-actions">
@@ -52,7 +55,7 @@ $_accent   = get_setting('accent_color', '');
                         <a href="/"<?= $_active === 'home' ? ' style="color:var(--accent)"' : '' ?>>Home</a>
                         <?php if ($_nu['role'] === 'admin'): ?>
                             <a href="/admin_posts.php"<?= $_active === 'posts' ? ' style="color:var(--accent)"' : '' ?>>Posts</a>
-                            <a href="/admin_settings.php"<?= $_active === 'site-settings' ? ' style="color:var(--accent)"' : '' ?>>Site Settings</a>
+                            <a href="/admin_settings.php"<?= $_active === 'site-settings' ? ' style="color:var(--accent)"' : '' ?>>Site Settings<?php if ($_show_update_dot): ?> <span class="nav-update-dot" title="Update available: v<?= htmlspecialchars(get_setting('latest_version')) ?>"></span><?php endif; ?></a>
                         <?php endif; ?>
                         <div class="menu-divider"></div>
                         <a href="/settings.php"<?= $_active === 'settings' ? ' style="color:var(--accent)"' : '' ?>>My Settings</a>
