@@ -37,10 +37,10 @@
 
 /* ---------- Tokens (light is default) ---------- */
 :root {
-    --bg:        #ffffff;
-    --bg-soft:   #f8fafc;
+    --bg:        #f5f6f8;
+    --bg-soft:   #eef0f3;
     --surface:   #ffffff;
-    --border:    #e5e7eb;
+    --border:    #d8dde4;
     --divider:   #e5e7eb;
 
     --text:      #0f172a;
@@ -396,7 +396,7 @@ h1, h2, h3, h4 {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 2rem;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .06), 0 4px 12px rgba(15, 23, 42, .04);
 }
 .form-card h1 {
     font-size: 1.5rem;
@@ -435,12 +435,13 @@ h1, h2, h3, h4 {
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 2.25rem 2.5rem;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, .06), 0 4px 10px rgba(15, 23, 42, .04);
     transition: border-color .15s, box-shadow .2s, transform .2s;
 }
 .post-article:hover {
-    border-color: var(--text-muted);
-    box-shadow: var(--shadow);
+    border-color: var(--text-soft);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, .08), 0 10px 30px rgba(15, 23, 42, .06);
+    transform: translateY(-1px);
 }
 
 /* Featured / pinned: accent left rule + slightly larger title */
