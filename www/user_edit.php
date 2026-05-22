@@ -119,17 +119,17 @@ $site_name = get_setting('site_name', 'SimpleBlog');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit <?= htmlspecialchars($target['username']) ?> &mdash; <?= htmlspecialchars($site_name) ?></title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css?v=<?= @filemtime(__DIR__ . "/style.css") ?>">
     <?php require __DIR__ . '/_head.php'; ?>
     <style>
         .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         @media (max-width: 640px) { .edit-grid { grid-template-columns: 1fr; } }
         select.form-select {
             width: 100%; padding: .6rem .85rem;
-            border: 1.5px solid #e2e8f0; border-radius: 7px;
-            font-size: .95rem; background: #f8fafc;
+            border: 1.5px solid var(--border); border-radius: 7px;
+            font-size: .95rem; background: var(--bg-soft); color: var(--text);
         }
-        select.form-select:focus { outline: none; border-color: #2563eb; background: #fff; }
+        select.form-select:focus { outline: none; border-color: var(--accent); background: var(--surface); }
     </style>
 </head>
 <body>
@@ -215,28 +215,28 @@ $site_name = get_setting('site_name', 'SimpleBlog');
         <h3>Account Info</h3>
         <table>
             <tbody>
-                <tr><td style="color:#64748b;width:140px">User ID</td><td><?= (int)$target['id'] ?></td></tr>
-                <tr><td style="color:#64748b">Role</td>
+                <tr><td style="color:var(--text-muted);width:140px">User ID</td><td><?= (int)$target['id'] ?></td></tr>
+                <tr><td style="color:var(--text-muted)">Role</td>
                     <td><span class="badge badge-<?= $target['role'] === 'admin' ? 'admin' : 'user' ?>">
                         <?= htmlspecialchars($target['role']) ?></span></td></tr>
-                <tr><td style="color:#64748b">Member since</td><td><?= htmlspecialchars($target['created_at']) ?></td></tr>
-                <tr><td style="color:#64748b">Last login</td><td><?= htmlspecialchars($target['last_login'] ?? 'Never') ?></td></tr>
+                <tr><td style="color:var(--text-muted)">Member since</td><td><?= htmlspecialchars($target['created_at']) ?></td></tr>
+                <tr><td style="color:var(--text-muted)">Last login</td><td><?= htmlspecialchars($target['last_login'] ?? 'Never') ?></td></tr>
             </tbody>
         </table>
     </div>
 
     <!-- Danger zone -->
     <?php if ($id !== $current['id']): ?>
-    <div style="margin-top:2rem;max-width:540px;border:1.5px solid #fca5a5;border-radius:10px;padding:1.25rem 1.5rem;background:#fff">
-        <h3 style="color:#dc2626;margin-bottom:.4rem">Danger Zone</h3>
-        <p style="font-size:.875rem;color:#64748b;margin-bottom:1rem">
+    <div style="margin-top:2rem;max-width:540px;border:1.5px solid var(--danger);border-radius:10px;padding:1.25rem 1.5rem;background:#fff">
+        <h3 style="color:var(--danger);margin-bottom:.4rem">Danger Zone</h3>
+        <p style="font-size:.875rem;color:var(--text-muted);margin-bottom:1rem">
             Permanently delete this account and all associated activity logs. This cannot be undone.
         </p>
         <form method="post" action="/user_edit.php?id=<?= $id ?>"
               data-confirm="Permanently delete <?= htmlspecialchars($target['username']) ?>? This cannot be undone.">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
             <input type="hidden" name="action" value="delete">
-            <button type="submit" class="btn" style="background:#dc2626;color:#fff">
+            <button type="submit" class="btn" style="background:var(--danger);color:#fff">
                 Delete <?= htmlspecialchars($target['username']) ?>
             </button>
         </form>

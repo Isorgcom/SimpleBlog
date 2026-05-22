@@ -18,7 +18,7 @@ $_show_update_dot = ($_nu && ($_nu['role'] ?? '') === 'admin'
 ?>
 <?php if ($_nav_bg || $_nav_text || $_accent): ?>
 <style>
-<?php if ($_accent): ?>:root{--accent:<?= htmlspecialchars($_accent,ENT_QUOTES) ?>;--accent-h:<?= htmlspecialchars($_accent,ENT_QUOTES) ?>;}<?php endif; ?>
+<?php if ($_accent): ?>:root{--accent:<?= htmlspecialchars($_accent,ENT_QUOTES) ?> !important;--accent-h:<?= htmlspecialchars($_accent,ENT_QUOTES) ?> !important;}<?php endif; ?>
 <?php if ($_nav_bg): ?>nav{background:<?= htmlspecialchars($_nav_bg,ENT_QUOTES) ?> !important;}<?php endif; ?>
 <?php if ($_nav_text): ?>nav .brand,nav .brand:hover{color:<?= htmlspecialchars($_nav_text,ENT_QUOTES) ?> !important;}<?php endif; ?>
 </style>

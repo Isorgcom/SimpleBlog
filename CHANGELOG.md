@@ -3,6 +3,27 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.4.0] — 2026-05-22 — Selectable themes
+
+### Added
+- **Five selectable themes.** Admins can choose a site-wide theme in
+  Settings → Appearance (dropdown): **Editorial** (default), **Evergreen**,
+  **Ember**, **Ink**, **Plum**. Each is a full color palette with light *and*
+  dark variants plus its own font pairing, applied via a `data-palette`
+  attribute on `<html>` (stamped in `_head.php`). Themes compose with the
+  per-visitor light/dark toggle and the existing nav/accent color pickers,
+  which still override a theme's accent/nav when set.
+- **Self-hosted theme fonts** — Lora, Fraunces, Space Grotesk, Sora (variable
+  woff2 in `www/vendor/fonts/`); only the active theme's fonts download.
+
+### Fixed
+- **Dark mode across the admin UI.** The Settings, Manage Posts, and Edit User
+  pages had hard-coded light colors that were unreadable in dark mode (notably
+  white-on-white `<select>`s). All admin chrome now uses the theme tokens.
+- **Stylesheet caching** — the `<link>` to `style.css` is now cache-busted with
+  the file mtime (`?v=…`) on every page, so CSS changes take effect without a
+  manual hard refresh.
+
 ## [0.3.0] — 2026-05-22 — Update notifications
 
 ### Added
@@ -192,6 +213,7 @@ are intentionally out of scope.
   comments (10/IP/5min), forgot-password (3/IP/hr),
   resend-verification (3/IP/hr). [medium]
 
+[0.4.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.4.0
 [0.3.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.3.0
 [0.2.2]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.2.2
 [0.2.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.2.0

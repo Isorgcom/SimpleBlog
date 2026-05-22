@@ -35,6 +35,36 @@
     font-display: swap;
 }
 
+/* ---------- Theme fonts (loaded only when a palette references them) ---------- */
+@font-face {
+    font-family: 'Lora';
+    src: url('/vendor/fonts/lora.woff2') format('woff2-variations');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Fraunces';
+    src: url('/vendor/fonts/fraunces.woff2') format('woff2-variations');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Space Grotesk';
+    src: url('/vendor/fonts/space-grotesk.woff2') format('woff2-variations');
+    font-weight: 300 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Sora';
+    src: url('/vendor/fonts/sora.woff2') format('woff2-variations');
+    font-weight: 100 800;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* ---------- Tokens (light is default) ---------- */
 :root {
     --bg:        #f5f6f8;
@@ -95,6 +125,67 @@
     --shadow-sm:  0 1px 2px rgba(0, 0, 0, .4);
     --shadow:     0 8px 28px rgba(0, 0, 0, .5);
     --shadow-lg:  0 24px 70px rgba(0, 0, 0, .7);
+}
+
+/* ============================================================
+   Selectable themes — admin picks one site-wide via [data-palette].
+   'editorial' (default) = the base :root above, no override needed.
+   Each palette overrides color tokens + the font pair; --font-serif is
+   the display/heading face (.brand, h1-h4, .post-title), --font-sans is body.
+   The [data-palette][data-theme="dark"] blocks out-specify the light ones.
+   ============================================================ */
+
+/* Evergreen — emerald, calm */
+:root[data-palette="evergreen"] {
+    --bg: #f4f7f5; --bg-soft: #e9efea; --surface: #ffffff; --border: #d3ddd6; --divider: #e2e9e4;
+    --text: #0f1f17; --text-soft: #44574d; --text-muted: #5e7268;
+    --accent: #059669; --accent-h: #047857; --accent-on: #ffffff; --accent-soft: rgba(5,150,105,.08);
+    --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
+}
+:root[data-palette="evergreen"][data-theme="dark"] {
+    --bg: #0a1410; --bg-soft: #0e1b15; --surface: #10231a; --border: #1d3328; --divider: #1d3328;
+    --text: #e3efe8; --text-soft: #9bb3a6; --text-muted: #6f8a7d;
+    --accent: #34d399; --accent-h: #6ee7b7; --accent-on: #06281c; --accent-soft: rgba(52,211,153,.14);
+}
+
+/* Ember — terracotta on warm paper */
+:root[data-palette="ember"] {
+    --bg: #faf6f0; --bg-soft: #f3ebe0; --surface: #fffdf9; --border: #e6d8c6; --divider: #efe6d8;
+    --text: #2b1d12; --text-soft: #6b5743; --text-muted: #8a755e;
+    --accent: #ea580c; --accent-h: #c2410c; --accent-on: #ffffff; --accent-soft: rgba(234,88,12,.09);
+    --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+}
+:root[data-palette="ember"][data-theme="dark"] {
+    --bg: #161009; --bg-soft: #1e160d; --surface: #241a10; --border: #3a2c1c; --divider: #3a2c1c;
+    --text: #f1e7d9; --text-soft: #c2ad94; --text-muted: #94806a;
+    --accent: #fb923c; --accent-h: #fdba74; --accent-on: #2b1405; --accent-soft: rgba(251,146,60,.15);
+}
+
+/* Ink — monochrome graphite, typography-forward */
+:root[data-palette="ink"] {
+    --bg: #fafafa; --bg-soft: #f1f1f2; --surface: #ffffff; --border: #d4d4d8; --divider: #e4e4e7;
+    --text: #09090b; --text-soft: #3f3f46; --text-muted: #71717a;
+    --accent: #18181b; --accent-h: #000000; --accent-on: #ffffff; --accent-soft: rgba(24,24,27,.06);
+    --font-sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    --font-serif: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+}
+:root[data-palette="ink"][data-theme="dark"] {
+    --bg: #09090b; --bg-soft: #131316; --surface: #18181b; --border: #2a2a2f; --divider: #2a2a2f;
+    --text: #f4f4f5; --text-soft: #a1a1aa; --text-muted: #71717a;
+    --accent: #e4e4e7; --accent-h: #ffffff; --accent-on: #18181b; --accent-soft: rgba(228,228,231,.12);
+}
+
+/* Plum — violet, modern */
+:root[data-palette="plum"] {
+    --bg: #f7f5fb; --bg-soft: #efebf6; --surface: #ffffff; --border: #ddd6ea; --divider: #e8e2f1;
+    --text: #1c142e; --text-soft: #4b4163; --text-muted: #6b6285;
+    --accent: #7c3aed; --accent-h: #6d28d9; --accent-on: #ffffff; --accent-soft: rgba(124,58,237,.08);
+    --font-serif: 'Sora', system-ui, -apple-system, sans-serif;
+}
+:root[data-palette="plum"][data-theme="dark"] {
+    --bg: #120e1f; --bg-soft: #181227; --surface: #1e1730; --border: #2f2547; --divider: #2f2547;
+    --text: #ece7f6; --text-soft: #ab9fc4; --text-muted: #7d7299;
+    --accent: #a78bfa; --accent-h: #c4b5fd; --accent-on: #1a1030; --accent-soft: rgba(167,139,250,.15);
 }
 
 /* ---------- Reset ---------- */

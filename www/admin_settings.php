@@ -270,8 +270,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     set_setting($key, $val);
                 }
             }
-            db_log_activity($current['id'], 'updated appearance colors');
-            $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Colors saved.'];
+            $theme = $_POST['site_theme'] ?? '';
+            if (in_array($theme, ['editorial', 'evergreen', 'ember', 'ink', 'plum'], true)) {
+                set_setting('site_theme', $theme);
+            }
+            db_log_activity($current['id'], 'updated appearance');
+            $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Appearance saved.'];
             $post_tab = 'appearance';
         }
 
@@ -358,22 +362,22 @@ if ($tab === 'dashboard') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Site Settings &mdash; <?= htmlspecialchars($site_name) ?></title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css?v=<?= @filemtime(__DIR__ . "/style.css") ?>">
     <?php require __DIR__ . '/_head.php'; ?>
     <style>
-        .hint { font-size: .78rem; color: #94a3b8; margin-top: .35rem; }
+        .hint { font-size: .78rem; color: var(--text-muted); margin-top: .35rem; }
 
         .tabs {
             display: flex;
             gap: 0;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid var(--border);
             margin-bottom: 1.75rem;
         }
         .tab-btn {
             padding: .6rem 1.25rem;
             font-size: .9rem;
             font-weight: 500;
-            color: #64748b;
+            color: var(--text-muted);
             background: none;
             border: none;
             border-bottom: 2px solid transparent;
@@ -381,8 +385,8 @@ if ($tab === 'dashboard') {
             cursor: pointer;
             text-decoration: none;
         }
-        .tab-btn:hover { color: #1e293b; }
-        .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; font-weight: 600; }
+        .tab-btn:hover { color: var(--text); }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
 
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
@@ -390,41 +394,41 @@ if ($tab === 'dashboard') {
         .pagination { display:flex; gap:.4rem; margin-top:1rem; flex-wrap:wrap; }
         .pagination a, .pagination span {
             display:inline-block; padding:.3rem .75rem; border-radius:6px;
-            font-size:.82rem; border:1px solid #e2e8f0;
+            font-size:.82rem; border:1px solid var(--border);
         }
-        .pagination a { color:#2563eb; }
-        .pagination a:hover { background:#eff6ff; text-decoration:none; }
-        .pagination .current { background:#2563eb; color:#fff; border-color:#2563eb; }
+        .pagination a { color:var(--accent); }
+        .pagination a:hover { background:var(--accent-soft); text-decoration:none; }
+        .pagination .current { background:var(--accent); color:var(--accent-on); border-color:var(--accent); }
 
         /* ── Users tab ── */
         #bulkBar {
             display: none; align-items: center; gap: .75rem;
-            background: #eff6ff; border: 1px solid #bfdbfe;
+            background: var(--accent-soft); border: 1px solid var(--border);
             border-radius: 8px; padding: .5rem 1rem;
-            font-size: .875rem; color: #1e40af; margin-bottom: 1rem;
+            font-size: .875rem; color: var(--accent); margin-bottom: 1rem;
         }
         #bulkBar .bulk-label { font-weight: 600; }
         .cb-col { width: 40px; text-align: center; }
-        input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: #2563eb; }
+        input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent); }
         .action-btns { display: flex; gap: .4rem; }
         .btn-icon {
             display: inline-flex; align-items: center; justify-content: center;
             width: 32px; height: 32px; border-radius: 7px; font-size: 1rem;
-            border: 1.5px solid #e2e8f0; background: #fff; cursor: pointer;
-            color: #475569; text-decoration: none;
+            border: 1.5px solid var(--border); background: var(--surface); cursor: pointer;
+            color: var(--text-soft); text-decoration: none;
         }
-        .btn-icon:hover { background: #f1f5f9; border-color: #cbd5e1; text-decoration: none; color: #1e293b; }
-        .btn-icon.danger { border-color: #fca5a5; color: #ef4444; }
-        .btn-icon.danger:hover { background: #fee2e2; border-color: #f87171; }
+        .btn-icon:hover { background: var(--bg-soft); border-color: var(--border); text-decoration: none; color: var(--text); }
+        .btn-icon.danger { border-color: var(--danger); color: var(--danger); }
+        .btn-icon.danger:hover { background: var(--danger-soft); border-color: var(--danger); }
         .modal-overlay {
             display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,.45); z-index: 200;
+            background: rgba(0,0,0,.55); z-index: 200;
             align-items: center; justify-content: center; padding: 1rem;
         }
         .modal-overlay.open { display: flex; }
         .modal {
-            background: #fff; border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,.25);
+            background: var(--surface); border-radius: 12px;
+            box-shadow: var(--shadow-lg);
             width: 100%; max-width: 440px; padding: 2rem;
             animation: modalIn .18s ease;
         }
@@ -436,15 +440,15 @@ if ($tab === 'dashboard') {
         .modal-header h2 { font-size: 1.25rem; }
         .modal-close {
             width: 32px; height: 32px; border-radius: 7px; border: none;
-            background: #f1f5f9; cursor: pointer; font-size: 1.1rem;
-            color: #64748b; display: flex; align-items: center; justify-content: center;
+            background: var(--bg-soft); cursor: pointer; font-size: 1.1rem;
+            color: var(--text-muted); display: flex; align-items: center; justify-content: center;
         }
-        .modal-close:hover { background: #e2e8f0; }
+        .modal-close:hover { background: var(--border); }
         .modal select {
-            width: 100%; padding: .6rem .85rem; border: 1.5px solid #e2e8f0;
-            border-radius: 7px; font-size: .95rem; background: #f8fafc;
+            width: 100%; padding: .6rem .85rem; border: 1.5px solid var(--border);
+            border-radius: 7px; font-size: .95rem; background: var(--bg-soft); color: var(--text);
         }
-        .modal select:focus { outline: none; border-color: #2563eb; background: #fff; }
+        .modal select:focus { outline: none; border-color: var(--accent); background: var(--surface); }
     </style>
 </head>
 <body>
@@ -482,7 +486,7 @@ if ($tab === 'dashboard') {
     <!-- ── Dashboard tab ── -->
     <div class="tab-panel <?= $tab === 'dashboard' ? 'active' : '' ?>">
 
-        <p style="color:#64748b;font-size:.875rem;margin-bottom:1.5rem">
+        <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:1.5rem">
             Welcome back, <?= htmlspecialchars($current['username']) ?>.
             <?php if ($current['last_login']): ?>
                 Last login: <?= htmlspecialchars($current['last_login']) ?>
@@ -510,7 +514,7 @@ if ($tab === 'dashboard') {
                 <div class="label">Version</div>
                 <div class="value" style="font-size:1.1rem">v<?= htmlspecialchars(APP_VERSION) ?></div>
                 <?php if (update_available()): ?>
-                <div style="margin-top:.35rem;font-size:.78rem;color:#92400e">
+                <div style="margin-top:.35rem;font-size:.78rem;color:var(--warning)">
                     Update available: v<?= htmlspecialchars(get_setting('latest_version')) ?>
                     &middot; <a href="<?= htmlspecialchars(CHANGELOG_URL) ?>" target="_blank" rel="noopener">changelog</a>
                 </div>
@@ -557,7 +561,7 @@ if ($tab === 'dashboard') {
                 </div>
                 <div class="form-group">
                     <label for="timezone">Timezone</label>
-                    <select id="timezone" name="timezone" style="width:100%;padding:.6rem .85rem;border:1.5px solid #e2e8f0;border-radius:7px;font-size:.95rem;background:#f8fafc">
+                    <select id="timezone" name="timezone" style="width:100%;padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:7px;font-size:.95rem;background:var(--bg-soft);color:var(--text)">
                         <?php foreach ($tz_offsets as $label => $tz_id): ?>
                             <option value="<?= htmlspecialchars($tz_id) ?>"
                                 <?= $tz_id === $timezone ? 'selected' : '' ?>>
@@ -571,7 +575,7 @@ if ($tab === 'dashboard') {
                     <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;font-weight:500">
                         <input type="checkbox" name="allow_registration" value="1"
                                <?= get_setting('allow_registration', '1') === '1' ? 'checked' : '' ?>
-                               style="width:16px;height:16px;accent-color:#2563eb">
+                               style="width:16px;height:16px;accent-color:var(--accent)">
                         Allow new user registration
                     </label>
                     <p class="hint">When unchecked, the Sign Up page returns a 403 and the link is hidden from the login page.</p>
@@ -589,18 +593,31 @@ if ($tab === 'dashboard') {
 
             <!-- Colors -->
             <div class="card">
-                <h2>Colors</h2>
-                <p class="subtitle">Customize the nav bar. Leave a field blank to use the default.</p>
+                <h2>Theme &amp; Colors</h2>
+                <p class="subtitle">Pick a site-wide theme, then optionally override the nav colors.</p>
                 <form method="post" action="/admin_settings.php">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
                     <input type="hidden" name="action" value="appearance">
                     <input type="hidden" name="tab" value="appearance">
+                    <?php
+                    $__themes = ['editorial' => 'Editorial', 'evergreen' => 'Evergreen', 'ember' => 'Ember', 'ink' => 'Ink', 'plum' => 'Plum'];
+                    $__cur_theme = get_setting('site_theme', 'editorial');
+                    ?>
+                    <div class="form-group">
+                        <label for="site_theme">Theme</label>
+                        <select name="site_theme" id="site_theme" style="width:100%;padding:.5rem;border:1.5px solid var(--border);border-radius:7px;background:var(--surface);color:var(--text);font-size:.9rem">
+                            <?php foreach ($__themes as $__slug => $__name): ?>
+                            <option value="<?= $__slug ?>"<?= $__cur_theme === $__slug ? ' selected' : '' ?>><?= $__name ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <p class="hint">Site-wide palette &amp; fonts (applies to the public blog). The colors below override the theme's accent/nav &mdash; clear them to use the theme's own.</p>
+                    </div>
                     <div class="form-group">
                         <label>Nav Background</label>
                         <div style="display:flex;gap:.5rem;align-items:center">
                             <input type="color" id="nav_bg_picker"
                                    value="<?= htmlspecialchars(get_setting('nav_bg_color','') ?: '#0f172a') ?>"
-                                   style="width:40px;height:38px;padding:2px;border:1.5px solid #e2e8f0;border-radius:7px;cursor:pointer;flex-shrink:0">
+                                   style="width:40px;height:38px;padding:2px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;flex-shrink:0">
                             <input type="text" name="nav_bg_color" id="nav_bg_color"
                                    value="<?= htmlspecialchars(get_setting('nav_bg_color','')) ?>"
                                    placeholder="#0f172a" maxlength="7" style="flex:1">
@@ -613,7 +630,7 @@ if ($tab === 'dashboard') {
                         <div style="display:flex;gap:.5rem;align-items:center">
                             <input type="color" id="nav_text_picker"
                                    value="<?= htmlspecialchars(get_setting('nav_text_color','') ?: '#ffffff') ?>"
-                                   style="width:40px;height:38px;padding:2px;border:1.5px solid #e2e8f0;border-radius:7px;cursor:pointer;flex-shrink:0">
+                                   style="width:40px;height:38px;padding:2px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;flex-shrink:0">
                             <input type="text" name="nav_text_color" id="nav_text_color"
                                    value="<?= htmlspecialchars(get_setting('nav_text_color','')) ?>"
                                    placeholder="#ffffff" maxlength="7" style="flex:1">
@@ -626,7 +643,7 @@ if ($tab === 'dashboard') {
                         <div style="display:flex;gap:.5rem;align-items:center">
                             <input type="color" id="accent_picker"
                                    value="<?= htmlspecialchars(get_setting('accent_color','') ?: '#2563eb') ?>"
-                                   style="width:40px;height:38px;padding:2px;border:1.5px solid #e2e8f0;border-radius:7px;cursor:pointer;flex-shrink:0">
+                                   style="width:40px;height:38px;padding:2px;border:1.5px solid var(--border);border-radius:7px;cursor:pointer;flex-shrink:0">
                             <input type="text" name="accent_color" id="accent_color"
                                    value="<?= htmlspecialchars(get_setting('accent_color','')) ?>"
                                    placeholder="#2563eb" maxlength="7" style="flex:1">
@@ -635,7 +652,7 @@ if ($tab === 'dashboard') {
                         </div>
                         <p class="hint">Used for buttons, active links, and highlights across the site.</p>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%">Save Colors</button>
+                    <button type="submit" class="btn btn-primary" style="width:100%">Save Appearance</button>
                 </form>
             </div>
 
@@ -654,7 +671,7 @@ if ($tab === 'dashboard') {
                     <input type="hidden" name="action" value="banner_remove">
                     <input type="hidden" name="tab" value="appearance">
                     <button type="submit" class="btn btn-outline"
-                            style="color:#ef4444;border-color:#fca5a5;font-size:.82rem">&#x2715; Remove Banner</button>
+                            style="color:var(--danger);border-color:var(--danger);font-size:.82rem">&#x2715; Remove Banner</button>
                 </form>
                 <?php endif; ?>
                 <form method="post" action="/admin_settings.php" enctype="multipart/form-data">
@@ -675,17 +692,17 @@ if ($tab === 'dashboard') {
 
         <!-- Live preview -->
         <div style="margin-top:1.5rem;max-width:860px">
-            <p style="font-size:.82rem;font-weight:600;color:#64748b;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">Live Preview</p>
+            <p style="font-size:.82rem;font-weight:600;color:var(--text-muted);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.04em">Live Preview</p>
             <div style="border-radius:10px;overflow:hidden;box-shadow:var(--shadow)">
                 <div id="previewTop" style="display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;background:<?= htmlspecialchars(get_setting('nav_bg_color','') ?: '#0f172a') ?>">
                     <span id="previewBrand" style="font-weight:700;font-size:1.15rem;color:<?= htmlspecialchars(get_setting('nav_text_color','') ?: '#ffffff') ?>">
                         <?= $banner_path ? '<img src="' . htmlspecialchars($banner_path) . '" style="max-height:36px;vertical-align:middle">' : htmlspecialchars($site_name) ?>
                     </span>
-                    <span style="color:#94a3b8;font-size:.875rem"><?= htmlspecialchars($current['username']) ?> &#9776;</span>
+                    <span style="color:var(--text-muted);font-size:.875rem"><?= htmlspecialchars($current['username']) ?> &#9776;</span>
                 </div>
                 <div id="previewLinks" style="height:40px;background:rgba(0,0,0,.2);padding:0 2rem;display:flex;align-items:center;gap:1.5rem">
                     <span id="previewAccent" style="font-size:.9rem;font-weight:600;color:<?= htmlspecialchars(get_setting('accent_color','') ?: '#2563eb') ?>">Home</span>
-                    <span style="font-size:.9rem;color:#94a3b8">Calendar</span>
+                    <span style="font-size:.9rem;color:var(--text-muted)">Calendar</span>
                 </div>
             </div>
         </div>
@@ -695,7 +712,7 @@ if ($tab === 'dashboard') {
     <div class="tab-panel <?= $tab === 'logs' ? 'active' : '' ?>">
 
         <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.25rem">
-            <p style="color:#64748b;font-size:.875rem;margin:0">
+            <p style="color:var(--text-muted);font-size:.875rem;margin:0">
                 All user activity &mdash; <?= number_format($log_total) ?> total entries.
             </p>
             <form method="post" action="/admin_settings.php"
@@ -704,13 +721,13 @@ if ($tab === 'dashboard') {
                 <input type="hidden" name="action" value="clear_logs">
                 <input type="hidden" name="tab" value="logs">
                 <button type="submit" class="btn"
-                        style="background:#ef4444;color:#fff">Clear Logs</button>
+                        style="background:var(--danger);color:#fff">Clear Logs</button>
             </form>
         </div>
 
         <div class="table-card">
             <?php if (empty($log_rows)): ?>
-                <p style="padding:1rem 1.5rem;color:#64748b;font-size:.875rem">No activity recorded yet.</p>
+                <p style="padding:1rem 1.5rem;color:var(--text-muted);font-size:.875rem">No activity recorded yet.</p>
             <?php else: ?>
             <table>
                 <thead>
@@ -740,7 +757,7 @@ if ($tab === 'dashboard') {
             </table>
 
             <?php if ($log_pages > 1): ?>
-            <div style="padding:.75rem 1.5rem;border-top:1px solid #e2e8f0">
+            <div style="padding:.75rem 1.5rem;border-top:1px solid var(--border)">
                 <div class="pagination">
                     <?php if ($page > 1): ?>
                         <a href="?tab=logs&page=<?= $page - 1 ?>">&lsaquo; Prev</a>
@@ -766,7 +783,7 @@ if ($tab === 'dashboard') {
     <div class="tab-panel <?= $tab === 'users' ? 'active' : '' ?>">
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:1rem">
-            <span style="color:#64748b;font-size:.875rem"><?= count($users) ?> user<?= count($users) !== 1 ? 's' : '' ?></span>
+            <span style="color:var(--text-muted);font-size:.875rem"><?= count($users) ?> user<?= count($users) !== 1 ? 's' : '' ?></span>
             <button class="btn btn-primary" data-action="open-user-modal">+ New User</button>
         </div>
 
@@ -777,7 +794,7 @@ if ($tab === 'dashboard') {
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($token) ?>">
                 <input type="hidden" name="action" value="bulk_delete">
                 <input type="hidden" name="tab" value="users">
-                <button type="submit" class="btn btn-sm" style="background:#ef4444;color:#fff">Delete Selected</button>
+                <button type="submit" class="btn btn-sm" style="background:var(--danger);color:#fff">Delete Selected</button>
             </form>
             <button class="btn btn-sm btn-outline" data-action="clear-user-sel">Clear</button>
         </div>
@@ -858,8 +875,8 @@ if ($tab === 'dashboard') {
                         'From Name'  => defined('SMTP_FROM_NAME')   ? SMTP_FROM_NAME   : '',
                     ];
                     foreach ($cfg_rows as $label => $val): ?>
-                    <tr style="border-bottom:1px solid #f1f5f9">
-                        <td style="padding:.45rem .5rem .45rem 0;color:#64748b;white-space:nowrap;width:30%"><?= $label ?></td>
+                    <tr style="border-bottom:1px solid var(--divider)">
+                        <td style="padding:.45rem .5rem .45rem 0;color:var(--text-muted);white-space:nowrap;width:30%"><?= $label ?></td>
                         <td style="padding:.45rem 0;font-family:monospace;word-break:break-all"><?= $label === 'Password' ? $val : htmlspecialchars((string)$val) ?></td>
                     </tr>
                     <?php endforeach; ?>
@@ -893,7 +910,7 @@ if ($tab === 'dashboard') {
                         <input type="text" name="smtp_user" autocomplete="off" value="<?= htmlspecialchars(get_setting('smtp_user','')) ?>">
                     </div>
                     <div class="form-group">
-                        <label>Password <span style="color:#94a3b8;font-weight:400">(leave blank to keep current)</span></label>
+                        <label>Password <span style="color:var(--text-muted);font-weight:400">(leave blank to keep current)</span></label>
                         <input type="password" name="smtp_pass" autocomplete="new-password">
                     </div>
                     <div class="form-group">
@@ -908,7 +925,7 @@ if ($tab === 'dashboard') {
                 </form>
                 <?php endif; ?>
 
-                <hr style="margin:1.5rem 0;border:none;border-top:1px solid #e2e8f0">
+                <hr style="margin:1.5rem 0;border:none;border-top:1px solid var(--border)">
 
                 <h3 style="margin-bottom:.75rem">Send Test Email</h3>
                 <form method="post" action="/admin_settings.php" style="display:flex;gap:.5rem">

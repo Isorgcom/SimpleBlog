@@ -200,23 +200,23 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Posts &mdash; <?= htmlspecialchars($site_name) ?></title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css?v=<?= @filemtime(__DIR__ . "/style.css") ?>">
     <?php require __DIR__ . '/_head.php'; ?>
     <link href="/vendor/jodit/jodit.min.css" rel="stylesheet">
     <style>
-        .hint { font-size: .78rem; color: #94a3b8; margin-top: .35rem; }
+        .hint { font-size: .78rem; color: var(--text-muted); margin-top: .35rem; }
 
         /* Modal */
         .modal-overlay {
             display: none; position: fixed; inset: 0;
-            background: rgba(0,0,0,.45); z-index: 200;
+            background: rgba(0,0,0,.55); z-index: 200;
             align-items: flex-start; justify-content: center;
             padding: 2rem 1rem; overflow-y: auto;
         }
         .modal-overlay.open { display: flex; }
         .modal {
-            background: #fff; border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,.25);
+            background: var(--surface); border-radius: 12px;
+            box-shadow: var(--shadow-lg);
             width: 100%; max-width: 860px; padding: 2rem;
             animation: modalIn .18s ease;
         }
@@ -231,27 +231,27 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
         .modal-header h2 { font-size: 1.25rem; }
         .modal-close {
             width: 32px; height: 32px; border-radius: 7px;
-            border: none; background: #f1f5f9; cursor: pointer;
-            font-size: 1.1rem; color: #64748b;
+            border: none; background: var(--bg-soft); cursor: pointer;
+            font-size: 1.1rem; color: var(--text-muted);
             display: flex; align-items: center; justify-content: center;
         }
-        .modal-close:hover { background: #e2e8f0; }
+        .modal-close:hover { background: var(--border); }
 
         .action-btns { display: flex; gap: .4rem; }
         .btn-sm-text {
             font-size: .78rem; padding: .25rem .65rem;
-            border-radius: 5px; border: 1px solid #e2e8f0;
-            background: #f8fafc; color: #64748b;
+            border-radius: 5px; border: 1px solid var(--border);
+            background: var(--surface); color: var(--text-muted);
             cursor: pointer; text-decoration: none; white-space: nowrap;
         }
-        .btn-sm-text:hover { background: #f1f5f9; color: #1e293b; text-decoration: none; }
-        .btn-sm-text.danger { border-color: #fca5a5; color: #ef4444; }
-        .btn-sm-text.danger:hover { background: #fee2e2; }
-        .btn-sm-text.muted { border-color: #e2e8f0; color: #94a3b8; }
-        .btn-sm-text.muted:hover { background: #f1f5f9; color: #475569; }
+        .btn-sm-text:hover { background: var(--bg-soft); color: var(--text); text-decoration: none; }
+        .btn-sm-text.danger { border-color: var(--danger); color: var(--danger); }
+        .btn-sm-text.danger:hover { background: var(--danger-soft); }
+        .btn-sm-text.muted { border-color: var(--border); color: var(--text-muted); }
+        .btn-sm-text.muted:hover { background: var(--bg-soft); color: var(--text-soft); }
         .hidden-badge {
-            font-size: .68rem; font-weight: 600; color: #64748b;
-            background: #f1f5f9; border: 1px solid #e2e8f0;
+            font-size: .68rem; font-weight: 600; color: var(--text-muted);
+            background: var(--bg-soft); border: 1px solid var(--border);
             border-radius: 4px; padding: .1rem .38rem; margin-right: .35rem;
             vertical-align: middle;
         }
@@ -261,17 +261,17 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
         /* Search + bulk bar */
         .table-toolbar {
             display: flex; align-items: center; gap: .75rem;
-            padding: .85rem 1.25rem; border-bottom: 1px solid #f1f5f9;
+            padding: .85rem 1.25rem; border-bottom: 1px solid var(--divider);
             flex-wrap: wrap;
         }
         .search-wrap { position: relative; flex: 1; min-width: 180px; }
         .search-wrap input {
             width: 100%; padding: .45rem .75rem .45rem 2rem;
-            border: 1px solid #e2e8f0; border-radius: 7px;
-            font-size: .875rem; background: #f8fafc; color: #1e293b;
+            border: 1px solid var(--border); border-radius: 7px;
+            font-size: .875rem; background: var(--bg-soft); color: var(--text);
             outline: none;
         }
-        .search-wrap input:focus { border-color: #93c5fd; background: #fff; }
+        .search-wrap input:focus { border-color: var(--accent); background: var(--surface); }
         .search-wrap::before {
             content: '\1F50D';
             position: absolute; left: .6rem; top: 50%;
@@ -279,15 +279,15 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
         }
         .bulk-bar {
             display: none; align-items: center; gap: .6rem;
-            padding: .55rem 1.25rem; background: #eff6ff;
-            border-bottom: 1px solid #bfdbfe; font-size: .85rem; color: #1e40af;
+            padding: .55rem 1.25rem; background: var(--accent-soft);
+            border-bottom: 1px solid var(--border); font-size: .85rem; color: var(--accent);
         }
         .bulk-bar.visible { display: flex; }
         .bulk-count { font-weight: 600; }
         th.col-cb, td.col-cb {
             width: 36px; padding-left: 1.1rem !important; padding-right: 0 !important;
         }
-        input.row-cb { accent-color: #2563eb; cursor: pointer; width: 15px; height: 15px; }
+        input.row-cb { accent-color: var(--accent); cursor: pointer; width: 15px; height: 15px; }
     </style>
 </head>
 <body>
@@ -317,7 +317,7 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
 
     <div class="table-card">
         <?php if (empty($posts)): ?>
-            <p style="padding:1rem 1.5rem;color:#64748b;font-size:.875rem">No posts yet.</p>
+            <p style="padding:1rem 1.5rem;color:var(--text-muted);font-size:.875rem">No posts yet.</p>
         <?php else: ?>
 
         <!-- Toolbar -->
