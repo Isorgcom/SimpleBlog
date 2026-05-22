@@ -226,13 +226,23 @@
 :root[data-palette="amber"] h3 { text-shadow: 0 0 6px rgba(255, 176, 0, .4); }
 /* scanlines — a faint 1px dark line every 3px */
 :root[data-palette="amber"] body::before {
-    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 2;
     background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0, 0, 0, .16) 2px 3px);
 }
 /* curved-tube edge vignette */
 :root[data-palette="amber"] body::after {
-    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9998;
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 1;
     background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .5) 100%);
+}
+/* Lift media + editable fields above the CRT overlay so scanlines/vignette don't
+   cover photos or what you're typing. Text stays static (under the overlay), and
+   the nav (z-index 100) / modals (z-index 200) sit above it automatically. */
+:root[data-palette="amber"] img,
+:root[data-palette="amber"] input,
+:root[data-palette="amber"] textarea,
+:root[data-palette="amber"] select {
+    position: relative;
+    z-index: 3;
 }
 /* terminal header: black bar with an amber rule, not a solid amber slab */
 :root[data-palette="amber"] nav { background: var(--bg); border-bottom: 1px solid var(--accent); }

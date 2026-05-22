@@ -3,6 +3,14 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.6.1] — 2026-05-22 — Amber CRT polish
+
+### Fixed
+- **Amber CRT** — the scanline/vignette overlay no longer covers images or
+  editable fields. The overlay is lowered beneath the UI layer (so the nav,
+  modals, and the post editor stay clean), and images / form inputs are lifted
+  above it; body text still sits under the overlay and keeps the CRT effect.
+
 ## [0.6.0] — 2026-05-22 — Amber CRT theme + homepage tweaks
 
 ### Added
@@ -259,6 +267,7 @@ are intentionally out of scope.
   comments (10/IP/5min), forgot-password (3/IP/hr),
   resend-verification (3/IP/hr). [medium]
 
+[0.6.1]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.6.1
 [0.6.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.6.0
 [0.5.1]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.5.1
 [0.5.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.5.0
