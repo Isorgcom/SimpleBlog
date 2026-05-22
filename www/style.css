@@ -287,7 +287,12 @@ body {
     color: var(--text);
     line-height: 1.6;
     font-size: 1rem;
-    min-height: 100vh;
+    /* App shell: nav + footer are fixed frames; only the content wrapper scrolls. */
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -462,23 +467,18 @@ nav {
 .user-menu-panel .signout:hover { background: var(--danger-soft); }
 
 /* ---------- Page wrappers ---------- */
-.read-wrap {
-    max-width: var(--measure-wide);
-    margin: 0 auto;
-    padding: 3rem 1.5rem 4rem;
+/* The content wrappers are the app-shell's scroll region (between nav + footer).
+   Full-width so the scrollbar sits at the viewport edge; content is centered to
+   the measure via padding (no extra wrapper element needed). */
+.read-wrap, .center-wrap, .admin-wrap {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;            /* lets the flex child scroll instead of growing the body */
+    scrollbar-gutter: stable;
 }
-
-.center-wrap {
-    max-width: var(--measure-narrow);
-    margin: 0 auto;
-    padding: 3rem 1.5rem 4rem;
-}
-
-.admin-wrap {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem 4rem;
-}
+.read-wrap   { padding: 3rem max(1.5rem, calc((100% - var(--measure-wide))   / 2)) 4rem; }
+.center-wrap { padding: 3rem max(1.5rem, calc((100% - var(--measure-narrow)) / 2)) 4rem; }
+.admin-wrap  { padding: 2rem max(1.5rem, calc((100% - 1100px)                / 2)) 4rem; }
 
 /* ---------- Type ---------- */
 h1, h2, h3, h4 {
@@ -896,26 +896,20 @@ h1, h2, h3, h4 {
 }
 .filter-banner a { margin-left: auto; }
 
-/* ---------- Bare <footer> (admin pages) ---------- */
-body > footer {
-    max-width: 1100px;
-    margin: 2rem auto 1.5rem;
-    padding: 1.5rem 1.5rem 0;
+/* ---------- Site footer — app-shell pinned bottom bar ---------- */
+.site-footer {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: .7rem 1.5rem;
     border-top: 1px solid var(--divider);
+    background: var(--bg);
     color: var(--text-muted);
     font-size: .82rem;
-}
-
-/* ---------- Site footer (reading pages) ---------- */
-.site-footer {
-    margin-top: 4rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--divider);
-    color: var(--text-muted);
-    font-size: .85rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    position: relative;   /* keep above the Amber CRT overlay (z-2), like the nav */
+    z-index: 100;
 }
 .site-footer .meta { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
 .archive { color: var(--text-soft); margin-bottom: 1.75rem; position: relative; }

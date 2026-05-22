@@ -62,14 +62,9 @@ if ($post) {
         </div>
     <?php endif; ?>
 
-    <footer class="site-footer">
-        <div class="meta">
-            <span>&copy; <?= (new DateTime('now', $local_tz))->format('Y') ?> <?= htmlspecialchars($site_name) ?></span>
-            <span class="dot">·</span>
-            <span>v<?= htmlspecialchars(APP_VERSION) ?></span>
-        </div>
-    </footer>
 </main>
+
+<?php require __DIR__ . '/_footer.php'; ?>
 
 <?php require __DIR__ . '/_comments_script.php'; ?>
 </body>

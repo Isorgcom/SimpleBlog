@@ -246,7 +246,7 @@ $site_name = get_setting('site_name', 'SimpleBlog');
 
 </div>
 
-<footer>&copy; <?= (new DateTime('now', new DateTimeZone(get_setting('timezone', 'UTC'))))->format('Y') ?> <?= htmlspecialchars($site_name) ?> v<?= htmlspecialchars(APP_VERSION) ?> &nbsp;&mdash;&nbsp; <?= (new DateTime('now', new DateTimeZone(get_setting('timezone', 'UTC'))))->format('F j, Y g:i A') ?></footer>
+<?php require __DIR__ . '/_footer.php'; ?>
 
 </body>
 </html>

@@ -30,6 +30,8 @@ if (get_setting('allow_registration', '1') !== '1') {
             <a href="/login.php" class="btn btn-primary" style="margin-top:1rem">Back to sign in</a>
         </div>
     </main>
+
+    <?php require __DIR__ . '/_footer.php'; ?>
     </body>
     </html>
     <?php
@@ -124,5 +126,7 @@ $site_name = get_setting('site_name', 'SimpleBlog');
         </p>
     </div>
 </main>
+
+<?php require __DIR__ . '/_footer.php'; ?>
 </body>
 </html>

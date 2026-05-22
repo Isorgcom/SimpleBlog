@@ -105,17 +105,9 @@ $tlMonths = $tlStmt->fetchAll();
         <div id="posts-loading" style="display:none;text-align:center;padding:1.5rem 0;color:var(--text-muted);font-size:.85rem">Loading…</div>
     <?php endif; ?>
 
-    <footer class="site-footer">
-        <div class="meta">
-            <span>&copy; <?= (new DateTime('now', $local_tz))->format('Y') ?> <?= htmlspecialchars($site_name) ?></span>
-            <span class="dot">·</span>
-            <span>v<?= htmlspecialchars(APP_VERSION) ?></span>
-            <span class="dot">·</span>
-            <a href="https://github.com/Isorgcom/SimpleBlog" target="_blank" rel="noopener">Source</a>
-        </div>
-    </footer>
-
 </main>
+
+<?php require __DIR__ . '/_footer.php'; ?>
 
 <script nonce="<?= csp_nonce() ?>">
 (function () {
@@ -156,7 +148,7 @@ $tlMonths = $tlStmt->fetchAll();
 
     const obs = new IntersectionObserver(entries => {
         if (entries[0].isIntersecting) loadMore();
-    }, { rootMargin: '400px' });
+    }, { root: document.querySelector('.read-wrap'), rootMargin: '400px' });
     obs.observe(sentinel);
 })();
 </script>

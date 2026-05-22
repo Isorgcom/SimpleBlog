@@ -70,5 +70,7 @@ $site_name = get_setting('site_name', 'SimpleBlog');
         <?php endif; ?>
     </div>
 </main>
+
+<?php require __DIR__ . '/_footer.php'; ?>
 </body>
 </html>

@@ -3,6 +3,18 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.7.0] — 2026-05-22 — App-shell layout
+
+### Changed
+- **App-shell layout, site-wide.** The nav and footer are now fixed frames and
+  the content scrolls between them, so the footer is always visible — it was
+  previously unreachable on the infinite-scroll homepage. Content stays centered
+  with the scrollbar at the viewport edge.
+
+### Added
+- Shared footer partial (`_footer.php`) used by every page (`© year · site ·
+  version · Source`), replacing the per-page footers.
+
 ## [0.6.2] — 2026-05-22 — Amber CRT polish
 
 ### Fixed
@@ -275,6 +287,7 @@ are intentionally out of scope.
   comments (10/IP/5min), forgot-password (3/IP/hr),
   resend-verification (3/IP/hr). [medium]
 
+[0.7.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.7.0
 [0.6.2]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.6.2
 [0.6.1]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.6.1
 [0.6.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.6.0
