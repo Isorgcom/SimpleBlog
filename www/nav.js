@@ -37,3 +37,26 @@ document.addEventListener('submit', function (e) {
         if (!confirm(form.getAttribute('data-confirm'))) e.preventDefault();
     }
 });
+
+// Fit the site name to a single line: when the brand text would overflow the nav
+// bar (mainly on phones), shrink its font by exactly the ratio needed. The brand is
+// white-space:nowrap + min-width:0, so a flex item that overflows reports
+// scrollWidth > clientWidth. Logo-image headers are left untouched.
+function fitBrand() {
+    var brand = document.querySelector('.brand');
+    if (!brand || brand.querySelector('img')) return;
+    brand.style.fontSize = '';                       // reset to the CSS size, then measure
+    if (brand.scrollWidth > brand.clientWidth) {
+        var size = parseFloat(getComputedStyle(brand).fontSize) * (brand.clientWidth / brand.scrollWidth);
+        brand.style.fontSize = Math.max(size, 11) + 'px';
+    }
+}
+
+fitBrand();
+// Re-fit once the web font loads (fallback metrics differ) and on resize/rotate.
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitBrand);
+var _brandRaf;
+window.addEventListener('resize', function () {
+    cancelAnimationFrame(_brandRaf);
+    _brandRaf = requestAnimationFrame(fitBrand);
+});

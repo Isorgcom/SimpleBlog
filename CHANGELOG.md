@@ -3,6 +3,16 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.7.3] — 2026-05-23 — Mobile nav fit
+
+### Changed
+- **Site name auto-fits to one line.** On narrow screens the nav brand shrinks its
+  font (via `nav.js`, measured against the available width) instead of wrapping to
+  two lines; full size on desktop, skips logo-image headers, re-fits on resize.
+
+### Fixed
+- The nav **Sign in** button no longer wraps to two lines on small screens.
+
 ## [0.7.2] — 2026-05-23 — Footer wording
 
 ### Changed
@@ -301,6 +311,7 @@ are intentionally out of scope.
   comments (10/IP/5min), forgot-password (3/IP/hr),
   resend-verification (3/IP/hr). [medium]
 
+[0.7.3]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.7.3
 [0.7.2]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.7.2
 [0.7.1]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.7.1
 [0.7.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.7.0

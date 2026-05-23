@@ -333,6 +333,8 @@ nav {
     display: flex;
     align-items: center;
     gap: .6rem;
+    white-space: nowrap;   /* keep the site name on one line; nav.js shrinks it to fit */
+    min-width: 0;          /* allow the flex item to shrink below content width */
 }
 .brand:hover { text-decoration: none; color: var(--accent-on); }
 .brand img { max-height: 36px; width: auto; display: block; }
@@ -347,6 +349,7 @@ nav {
     background: transparent;
     color: var(--accent-on);
     border-color: color-mix(in srgb, var(--accent-on) 45%, transparent);
+    white-space: nowrap;   /* keep "Sign in" on one line in the cramped mobile bar */
 }
 .nav-actions .btn-outline:hover {
     background: color-mix(in srgb, var(--accent-on) 16%, transparent);
