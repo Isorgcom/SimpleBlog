@@ -13,6 +13,6 @@ $__f_name = get_setting('site_name', 'SimpleBlog');
         <span class="dot">·</span>
         <span>v<?= htmlspecialchars(APP_VERSION) ?></span>
         <span class="dot">·</span>
-        <a href="https://github.com/Isorgcom/SimpleBlog" target="_blank" rel="noopener">Source</a>
+        <a href="https://github.com/Isorgcom/SimpleBlog" target="_blank" rel="noopener">Powered By <strong>SimpleBlog</strong></a>
     </div>
 </footer>

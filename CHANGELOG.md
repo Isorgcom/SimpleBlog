@@ -3,6 +3,12 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.7.2] — 2026-05-23 — Footer wording
+
+### Changed
+- Footer link now reads **Powered By SimpleBlog** (SimpleBlog in bold), still
+  linking to the project repository.
+
 ## [0.7.1] — 2026-05-22 — Year/Month/Post archive
 
 ### Changed
@@ -295,6 +301,7 @@ are intentionally out of scope.
   comments (10/IP/5min), forgot-password (3/IP/hr),
   resend-verification (3/IP/hr). [medium]
 
+[0.7.2]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.7.2
 [0.7.1]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.7.1
 [0.7.0]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.7.0
 [0.6.2]: https://github.com/Isorgcom/SimpleBlog/releases/tag/v0.6.2
