@@ -45,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newId = (int)$db->lastInsertId();
             $db->prepare('UPDATE posts SET slug = ? WHERE id = ?')
                ->execute([unique_post_slug($db, $title, $newId), $newId]);
+            set_post_tags($db, $newId, parse_tags($_POST['tags'] ?? '', $content));
             db_log_activity($current['id'], "created post: $title");
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Post published.'];
         }
@@ -69,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pinned = isset($_POST['pinned']) ? 1 : 0;
             $db->prepare('UPDATE posts SET title=?, content=?, created_at=?, pinned=? WHERE id=?')
                ->execute([$title, $content, $dt, $pinned, $id]);
+            set_post_tags($db, $id, parse_tags($_POST['tags'] ?? '', $content));
             db_log_activity($current['id'], "edited post id: $id");
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Post updated.'];
         }
@@ -132,7 +134,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
+            $db->prepare('DELETE FROM post_tags WHERE post_id=?')->execute([$id]);
             $db->prepare('DELETE FROM posts WHERE id=?')->execute([$id]);
+            prune_orphan_tags($db);
             db_log_activity($current['id'], "deleted post: $title" . ($imgs_deleted ? " ($imgs_deleted image(s) removed)" : ''));
             $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Post deleted.' . ($imgs_deleted ? " $imgs_deleted image(s) removed." : '')];
         }
@@ -168,9 +172,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
+            $db->prepare('DELETE FROM post_tags WHERE post_id=?')->execute([$id]);
             $db->prepare('DELETE FROM posts WHERE id=?')->execute([$id]);
             $deleted++;
         }
+        prune_orphan_tags($db);
 
         db_log_activity($current['id'], "bulk deleted $deleted post(s)" . ($imgs_deleted ? ", $imgs_deleted image(s) removed" : ''));
         $_SESSION['flash'] = ['type' => 'success', 'msg' => "$deleted post(s) deleted." . ($imgs_deleted ? " $imgs_deleted image(s) removed." : '')];
@@ -191,6 +197,7 @@ if ($edit_id > 0) {
     $edit_post = $s->fetch();
     if (!$edit_post) $edit_id = 0;
 }
+$edit_tags = $edit_id > 0 ? implode(', ', tags_for_posts($db, [$edit_id])[$edit_id] ?? []) : '';
 
 $posts    = $db->query('SELECT id, title, created_at, pinned, hidden FROM posts ORDER BY pinned DESC, created_at DESC')->fetchAll();
 $token    = csrf_token();
@@ -428,6 +435,11 @@ $now_local = (new DateTime('now', $local_tz))->format('Y-m-d H:i:s');
                 <input type="text" id="f_title" name="title" required autocomplete="off">
             </div>
             <div class="form-group">
+                <label for="f_tags">Tags</label>
+                <input type="text" id="f_tags" name="tags" autocomplete="off" placeholder="php, web-dev, tutorial">
+                <p class="hint">Separate with commas or spaces. <code>#tags</code> written in the body are added automatically.</p>
+            </div>
+            <div class="form-group">
                 <label>Date &amp; Time</label>
                 <div style="display:flex;gap:.75rem">
                     <input type="date" id="f_date" name="post_date" style="flex:1">
@@ -537,12 +549,13 @@ let _submitting = false;
 document.getElementById('postForm').addEventListener('submit', () => { _submitting = true; });
 
 // ── Modal ─────────────────────────────────────────────────────────────────────
-function openModal(id, title, date, content, pinned) {
+function openModal(id, title, date, content, pinned, tags) {
     const editing = !!id;
     document.getElementById('modalTitle').textContent  = editing ? 'Edit Post' : 'New Post';
     document.getElementById('formAction').value        = editing ? 'edit' : 'add';
     document.getElementById('formId').value            = id || '';
     document.getElementById('f_title').value           = title || '';
+    document.getElementById('f_tags').value            = tags || '';
     document.getElementById('submitBtn').textContent   = editing ? 'Save Changes' : 'Publish';
     document.getElementById('pinRow').style.display    = editing ? '' : 'none';
     document.getElementById('f_pinned').checked        = !!pinned;
@@ -562,8 +575,9 @@ function openModal(id, title, date, content, pinned) {
 function isDirty() {
     if (_submitting) return false;
     const title   = document.getElementById('f_title').value.trim();
+    const tags    = document.getElementById('f_tags').value.trim();
     const content = editor.value.trim();
-    return title !== '' || content !== '';
+    return title !== '' || tags !== '' || content !== '';
 }
 
 function closeModal(force) {
@@ -649,7 +663,8 @@ openModal(
     <?= json_encode($edit_post['title'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
     <?= json_encode((new DateTime($edit_post['created_at'], new DateTimeZone('UTC')))->setTimezone(new DateTimeZone(get_setting('timezone', 'UTC')))->format('Y-m-d H:i:s'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
     <?= json_encode($edit_post['content'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
-    <?= (int)$edit_post['pinned'] ?>
+    <?= (int)$edit_post['pinned'] ?>,
+    <?= json_encode($edit_tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
 );
 <?php endif; ?>
 </script>

@@ -6,12 +6,21 @@ $db        = get_db();
 $site_name = get_setting('site_name', 'SimpleBlog');
 
 $chunk = 5;
-$monthFilter = preg_match('/^\d{4}-\d{2}$/', $_GET['month'] ?? '') ? $_GET['month'] : null;
+// A tag filter (pretty URL /tag/<name>) takes precedence over a month filter.
+$tagFilter   = normalize_tag($_GET['tag'] ?? '');
+$tagFilter   = $tagFilter !== '' ? $tagFilter : null;
+$monthFilter = !$tagFilter && preg_match('/^\d{4}-\d{2}$/', $_GET['month'] ?? '') ? $_GET['month'] : null;
 
 $local_tz = new DateTimeZone(get_setting('timezone', 'UTC'));
 $now      = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
 
-if ($monthFilter) {
+if ($tagFilter) {
+    $cnt = $db->prepare("SELECT COUNT(*) FROM posts p JOIN post_tags pt ON pt.post_id = p.id JOIN tags t ON t.id = pt.tag_id WHERE p.created_at <= ? AND p.hidden = 0 AND t.name = ?");
+    $cnt->execute([$now, $tagFilter]);
+    $total = (int)$cnt->fetchColumn();
+    $stmt = $db->prepare("SELECT p.id, p.title, p.content, p.created_at, p.pinned, p.slug FROM posts p JOIN post_tags pt ON pt.post_id = p.id JOIN tags t ON t.id = pt.tag_id WHERE p.created_at <= ? AND p.hidden = 0 AND t.name = ? ORDER BY p.pinned DESC, p.created_at DESC LIMIT ?");
+    $stmt->execute([$now, $tagFilter, $chunk]);
+} elseif ($monthFilter) {
     $cnt = $db->prepare("SELECT COUNT(*) FROM posts WHERE created_at <= ? AND hidden = 0 AND strftime('%Y-%m', datetime(created_at)) = ?");
     $cnt->execute([$now, $monthFilter]);
     $total = (int)$cnt->fetchColumn();
@@ -25,6 +34,10 @@ if ($monthFilter) {
     $stmt->execute([$now, $chunk]);
 }
 $posts = $stmt->fetchAll();
+
+$tag_map = tags_for_posts($db, array_column($posts, 'id'));
+foreach ($posts as &$p) { $p['tags'] = $tag_map[$p['id']] ?? []; }
+unset($p);
 
 $post_comments = [];
 if (!empty($posts)) {
@@ -65,7 +78,7 @@ foreach ($tlStmt->fetchAll() as $r) {
 
 <main class="read-wrap">
 
-    <?php if (!empty($archive)): ?>
+    <?php if (!empty($archive) && !$tagFilter): ?>
     <details class="archive">
         <summary>Archive</summary>
         <div class="archive-tree">
@@ -88,7 +101,12 @@ foreach ($tlStmt->fetchAll() as $r) {
     </details>
     <?php endif; ?>
 
-    <?php if ($monthFilter): ?>
+    <?php if ($tagFilter): ?>
+    <div class="filter-banner">
+        <span>Showing posts tagged <strong>#<?= htmlspecialchars($tagFilter) ?></strong></span>
+        <a href="/">← All posts</a>
+    </div>
+    <?php elseif ($monthFilter): ?>
     <div class="filter-banner">
         <span>Showing posts from <strong><?= htmlspecialchars(date('F Y', mktime(0,0,0,(int)explode('-',$monthFilter)[1],1,(int)explode('-',$monthFilter)[0]))) ?></strong></span>
         <a href="/">← All posts</a>
@@ -107,7 +125,7 @@ foreach ($tlStmt->fetchAll() as $r) {
         <div class="post-list">
         <?php foreach ($posts as $post):
             $comments  = $post_comments[$post['id']] ?? [];
-            $redir     = '/' . ($monthFilter ? '?month=' . urlencode($monthFilter) : '') . '#post-' . (int)$post['id'];
+            $redir     = ($tagFilter ? '/tag/' . rawurlencode($tagFilter) : '/' . ($monthFilter ? '?month=' . urlencode($monthFilter) : '')) . '#post-' . (int)$post['id'];
             $permalink = '/post/' . rawurlencode($post['slug'] ?? '');
             require __DIR__ . '/_post_article.php';
         endforeach; ?>
@@ -128,7 +146,7 @@ foreach ($tlStmt->fetchAll() as $r) {
     if (!sentinel) return;
 
     const CHUNK = <?= (int)$chunk ?>;
-    const MONTH_PARAM = <?= json_encode($monthFilter ? '&month=' . $monthFilter : '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    const FILTER_PARAM = <?= json_encode($tagFilter ? '&tag=' . $tagFilter : ($monthFilter ? '&month=' . $monthFilter : ''), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     let offset  = <?= count($posts) ?>;
     let hasMore = <?= json_encode($total > count($posts), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     let busy    = false;
@@ -139,7 +157,7 @@ foreach ($tlStmt->fetchAll() as $r) {
         if (busy || !hasMore) return;
         busy = true; loading.style.display = '';
         try {
-            const res  = await fetch('/posts_chunk.php?offset=' + offset + '&limit=' + CHUNK + MONTH_PARAM);
+            const res  = await fetch('/posts_chunk.php?offset=' + offset + '&limit=' + CHUNK + FILTER_PARAM);
             const html = await res.text();
             if (!html.trim()) { hasMore = false; sentinel.remove(); return; }
             const tpl = document.createElement('template');

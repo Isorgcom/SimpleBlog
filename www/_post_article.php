@@ -3,6 +3,7 @@
  * Single post "article" card — shared by index.php, posts_chunk.php, post.php.
  * Expects in scope:
  *   $post       — row with id, title, content, created_at, pinned, slug
+ *                 (optional 'tags' => array of normalized tag names)
  *   $comments   — array of comment rows for this post
  *   $isAdmin    — bool
  *   $user       — array|null (current user)
@@ -35,6 +36,14 @@ $rt = reading_time($post['content']);
     </div>
     <h2 class="post-title"><a href="<?= htmlspecialchars($permalink) ?>"><?= htmlspecialchars($post['title']) ?></a></h2>
     <div class="post-body"><?= sanitize_html($post['content']) ?></div>
+
+    <?php if (!empty($post['tags'])): ?>
+    <div class="post-tags">
+        <?php foreach ($post['tags'] as $t): ?>
+        <a class="tag-chip" href="/tag/<?= rawurlencode($t) ?>">#<?= htmlspecialchars($t) ?></a>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 
     <div class="comments-section" id="csec-<?= (int)$post['id'] ?>">
         <button type="button" class="comments-heading" data-post="<?= (int)$post['id'] ?>">

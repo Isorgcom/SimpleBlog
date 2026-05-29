@@ -23,6 +23,7 @@ $post = ($slug !== '') ? $stmt->fetch() : false;
 
 $comments = [];
 if ($post) {
+    $post['tags'] = tags_for_posts($db, [$post['id']])[$post['id']] ?? [];
     $cs = $db->prepare("SELECT c.*, u.username FROM comments c JOIN users u ON u.id = c.user_id WHERE c.type = 'post' AND c.content_id = ? ORDER BY c.created_at ASC");
     $cs->execute([$post['id']]);
     $comments  = $cs->fetchAll();

@@ -3,6 +3,19 @@
 All notable changes to SimpleBlog are documented here. Entries are tagged
 with a severity hint when the change is security-relevant.
 
+## [0.8.0] — 2026-05-29 — Hashtags
+
+### Added
+- **#hashtags on posts.** Posts can now be tagged. Tags come from a dedicated
+  **Tags** field in the post editor (comma- or space-separated) **and** are
+  auto-extracted from any `#hashtag` written in the post body — both sources are
+  merged, normalized (lowercase, URL-safe), and de-duplicated.
+- Tags render as **chips** beneath each post (feed, permalink, and single-post
+  views). Clicking a chip opens **`/tag/<name>`**, a filtered feed of every
+  published post carrying that tag, reusing the existing infinite-scroll.
+- New `tags` / `post_tags` tables (created automatically on first run). Tag rows
+  with no remaining posts are pruned on edit and delete.
+
 ## [0.7.3] — 2026-05-23 — Mobile nav fit
 
 ### Changed

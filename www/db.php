@@ -72,6 +72,19 @@ function db_init(PDO $pdo): void {
         );
 
         CREATE INDEX IF NOT EXISTS idx_comments_lookup ON comments(type, content_id);
+
+        CREATE TABLE IF NOT EXISTS tags (
+            id   INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE
+        );
+
+        CREATE TABLE IF NOT EXISTS post_tags (
+            post_id INTEGER NOT NULL,
+            tag_id  INTEGER NOT NULL,
+            PRIMARY KEY (post_id, tag_id)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_post_tags_tag ON post_tags(tag_id);
     ");
 
     try { $pdo->exec("ALTER TABLE posts ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0"); } catch (Exception $e) {}
@@ -170,6 +183,90 @@ function unique_post_slug(PDO $db, string $title, int $id): string {
     $stmt = $db->prepare("SELECT COUNT(*) FROM posts WHERE slug = ? AND id <> ?");
     $stmt->execute([$base, $id]);
     return ((int)$stmt->fetchColumn() === 0) ? $base : $base . '-' . $id;
+}
+
+/**
+ * Normalize a single hashtag to its canonical, URL-safe form: drop a leading
+ * '#', lowercase, non-alphanumerics → hyphens. Returns '' for empty input so
+ * callers can drop it (unlike slugify(), which falls back to 'post').
+ */
+function normalize_tag(string $s): string {
+    $s = ltrim(trim($s), '#');
+    if (function_exists('iconv')) {
+        $t = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
+        if ($t !== false) $s = $t;
+    }
+    $s = strtolower($s);
+    $s = preg_replace('/[^a-z0-9]+/', '-', $s);
+    $s = trim($s, '-');
+    return substr($s, 0, 50);
+}
+
+/**
+ * Collect tags for a post from two sources, normalized & de-duplicated
+ * (insertion order preserved):
+ *   1. the dedicated tags field (comma- or whitespace-separated);
+ *   2. inline #hashtags found in the post body text.
+ */
+function parse_tags(string $field, string $contentHtml): array {
+    $raw = preg_split('/[\s,]+/', $field, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    if (preg_match_all('/#([\p{L}\p{N}_-]+)/u', strip_tags($contentHtml), $m)) {
+        $raw = array_merge($raw, $m[1]);
+    }
+    $out = [];
+    foreach ($raw as $r) {
+        $n = normalize_tag($r);
+        if ($n !== '' && !in_array($n, $out, true)) $out[] = $n;
+    }
+    return $out;
+}
+
+/**
+ * Replace a post's tags with $names (already-normalized or raw — normalized
+ * here defensively). Creates missing tag rows, links them, and prunes any tag
+ * left referenced by no post (no FK cascade is enabled on this connection).
+ */
+function set_post_tags(PDO $db, int $postId, array $names): void {
+    $db->prepare('DELETE FROM post_tags WHERE post_id = ?')->execute([$postId]);
+    $ins  = $db->prepare('INSERT OR IGNORE INTO tags (name) VALUES (?)');
+    $find = $db->prepare('SELECT id FROM tags WHERE name = ?');
+    $link = $db->prepare('INSERT OR IGNORE INTO post_tags (post_id, tag_id) VALUES (?, ?)');
+    foreach ($names as $name) {
+        $n = normalize_tag($name);
+        if ($n === '') continue;
+        $ins->execute([$n]);
+        $find->execute([$n]);
+        $tagId = (int)$find->fetchColumn();
+        if ($tagId > 0) $link->execute([$postId, $tagId]);
+    }
+    prune_orphan_tags($db);
+}
+
+/** Drop tag rows no longer referenced by any post. */
+function prune_orphan_tags(PDO $db): void {
+    $db->exec('DELETE FROM tags WHERE id NOT IN (SELECT tag_id FROM post_tags)');
+}
+
+/**
+ * Map of post id => [tag names], for the given post ids. One query, so feed
+ * pages avoid an N+1. Tag names come back alphabetically.
+ */
+function tags_for_posts(PDO $db, array $postIds): array {
+    $ids = array_values(array_filter(array_map('intval', $postIds), fn($i) => $i > 0));
+    if (!$ids) return [];
+    $ph   = implode(',', array_fill(0, count($ids), '?'));
+    $stmt = $db->prepare(
+        "SELECT pt.post_id, t.name FROM post_tags pt
+         JOIN tags t ON t.id = pt.tag_id
+         WHERE pt.post_id IN ($ph)
+         ORDER BY t.name ASC"
+    );
+    $stmt->execute($ids);
+    $out = [];
+    foreach ($stmt->fetchAll() as $row) {
+        $out[(int)$row['post_id']][] = $row['name'];
+    }
+    return $out;
 }
 
 /**

@@ -8,6 +8,9 @@ php_flag display_errors Off
 RewriteEngine On
 RewriteRule ^post/([A-Za-z0-9_-]+)/?$ post.php?slug=$1 [L,QSA]
 
+# Tag pages: /tag/<name> -> index.php?tag=<name>
+RewriteRule ^tag/([A-Za-z0-9_-]+)/?$ index.php?tag=$1 [L,QSA]
+
 # Block direct web access to internal/partial PHP files
 <FilesMatch "^(auth|db|_nav|_head|_post_article|_comments_script|config|mail)\.php$">
     Require all denied
